@@ -7,7 +7,7 @@ import { continueAsGuest } from '../../store/userSlice';
 import { useColors } from '../../theme/hooks';
 import theme from '../../theme';
 import { t } from '../../i18n';
-import QuickPrefsHeaderRight from '../../components/QuickPrefs';
+// Header quick prefs are provided via navigator header on this screen
 
 export default function WelcomeScreen({ navigation }) {
   const colors = useColors();
@@ -21,15 +21,6 @@ export default function WelcomeScreen({ navigation }) {
 
   return (
     <View style={[styles.wrapper, { backgroundColor: colors.background }]}>
-      {/* Top bar: language/dark/color + skip */}
-      <View style={styles.topBar}>
-        <QuickPrefsHeaderRight />
-        <TouchableOpacity onPress={onGuest} activeOpacity={0.8} style={styles.skipBtn}>
-          <Ionicons name="play-skip-forward" size={20} color={colors.text} />
-          <Text style={[styles.skipText, { color: colors.text }]}>{t('continue_as_guest') || 'Continue as Guest'}</Text>
-        </TouchableOpacity>
-      </View>
-
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
           <Image
@@ -82,21 +73,6 @@ export default function WelcomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-  },
-  skipBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  skipText: {
-    fontWeight: theme.fontWeight.semibold,
   },
   container: {
     paddingHorizontal: theme.spacing.xl,

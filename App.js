@@ -9,6 +9,7 @@ import { Platform, ActivityIndicator, View, Text, TextInput, TouchableOpacity } 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import QuickPrefsHeaderRight from './src/components/QuickPrefs';
+import WelcomeHeaderRight from './src/components/WelcomeHeaderRight';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
 import * as SplashScreen from 'expo-splash-screen';
@@ -164,9 +165,17 @@ function AuthStack() {
         ),
       })}
     >
-      <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ title: 'Welcome' }} />
-      <Stack.Screen name="Login" component={LoginScreen} options={{ title: t('login') }} />
-      <Stack.Screen name="Register" component={RegisterScreen} options={{ title: t('create_account') || 'Create Account' }} />
+      <Stack.Screen
+        name="Welcome"
+        component={WelcomeScreen}
+        options={({ navigation }) => ({
+          title: 'Welcome',
+          headerRight: () => <WelcomeHeaderRight navigation={navigation} />,
+          headerLeft: () => null,
+        })}
+      />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }
@@ -178,10 +187,10 @@ function HomeStack() {
         <Ionicons name="menu" size={22} color={'#fff'} />
       </TouchableOpacity>
     ) })}>
-      <Stack.Screen name="HomeMain" component={HomeScreen}  />
-      <Stack.Screen name="CourseDetails" component={CourseDetailsScreen}  />
-      <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ title: t('course') }} />
-      <Stack.Screen name="TeacherProfile" component={TeacherProfileScreen} options={{ title: t('teacher_profile') }} />
+      <Stack.Screen name="HomeMain" component={HomeScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="TeacherProfile" component={TeacherProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
     </Stack.Navigator>
   );
@@ -196,19 +205,15 @@ function SearchStack() {
     ) })}>
       <Stack.Screen name="SearchMain" component={SearchScreen}  />
       <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ title: t('search') }} />
-      <Stack.Screen name="CourseDetails" component={CourseDetailsScreen}  />
-      <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ title: t('course') }} />
+      <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }
 
 function AdminStack() {
   return (
-    <Stack.Navigator screenOptions={({ navigation }) => ({ headerShown: true, headerStyle: { backgroundColor: theme.colors.primary }, headerTintColor: '#fff', headerTitleStyle: { color: '#fff', fontWeight: '700' }, headerRight: () => <QuickPrefsHeaderRight />, headerLeft: () => (
-      <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
-        <Ionicons name="menu" size={22} color={'#fff'} />
-      </TouchableOpacity>
-    ) })}>
+    <Stack.Navigator screenOptions={({ navigation }) => ({ headerShown: false })}>
       <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ title: 'Admin' }} />
       <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} options={{ title: t('admin') }} />
       <Stack.Screen name="AdminCourseForm" component={CourseFormScreen} options={{ title: t('course') }} />
