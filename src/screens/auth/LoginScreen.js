@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { useDispatch } from 'react-redux';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { loginSuccess } from '../../store/userSlice';
 import theme from '../../theme';
 import { t } from '../../i18n';
-import AuthLayout from '../../components/AuthLayout';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { loginSuccess } from '../../store/userSlice';
 
 export default function LoginScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -23,33 +22,53 @@ export default function LoginScreen({ navigation }) {
 
   const onLogin = async () => {
     if (!validate()) return;
-    const user = {
-      id: Date.now(),
-      name: name.trim(),
-      email: email.trim(),
-      role: 'user',
-      avatar: 'https://i.pravatar.cc/150?img=3',
-    };
-    dispatch(loginSuccess(user));
+    const nm = (name || '').trim();
+    const em = (email || '').trim();
+    let map = {};
+    try {
+      const rawMap = await AsyncStorage.getItem('@elearning_profiles');
+      map = rawMap ? JSON.parse(rawMap) : {};
+    } catch {}
+    const key = em.toLowerCase();
+
+    let user = null;
+    if (map[key]) {
+      const prev = map[key];
+      user = {
+        ...prev,
+        id: prev.id || Date.now(),
+        name: nm || prev.name || 'Learner',
+        email: em,
+        role: prev.role || (em.endsWith('@admin.com') ? 'admin' : 'user'),
+        avatar: prev.avatar || 'https://i.pravatar.cc/150?img=3',
+        profile: prev.profile || {},
+      };
+    } else {
+      user = {
+        id: Date.now(),
+        name: nm || 'Learner',
+        email: em,
+        role: em.endsWith('@admin.com') ? 'admin' : 'user',
+        avatar: 'https://i.pravatar.cc/150?img=3',
+        profile: {},
+      };
+    }
+    try {
+      map[key] = user;
+      await AsyncStorage.setItem('@elearning_profiles', JSON.stringify(map));
+    } catch {}
+
+    try { dispatch(loginSuccess(user)); } catch {}
     try { await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ user })); } catch {}
-    if (navigation.canGoBack()) navigation.goBack(); else navigation.navigate('HomeTabs');
+    try {
+      navigation.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
+    } catch {}
   };
 
   return (
-    <AuthLayout
-      title={t('welcome_back') || 'Welcome back!'}
-      subtitle={t('login_to_continue') || 'Login to continue learning'}
-      footer={(
-        <View style={{ marginTop: 12, alignItems: 'center' }}>
-          <Text style={{ color: theme.colors.muted }}>
-            {(t('no_account') || "Don't have an account?") + ' '}
-            <Text style={{ color: theme.colors.primary, fontWeight: '700' }} onPress={() => navigation.navigate('Register')}>
-              {t('create_account') || 'Create account'}
-            </Text>
-          </Text>
-        </View>
-      )}
-    >
+    <View style={{ flex: 1, padding: 20, justifyContent: 'center', backgroundColor: theme.colors.background }}>
+      <Text style={styles.title}>{t('welcome_back') || 'Welcome back!'}</Text>
+      <Text style={styles.subtitle}>{t('login_to_continue') || 'Login to continue learning'}</Text>
       <View style={styles.field}> 
         <Text style={styles.label}>{t('name') || 'Name'}</Text>
         <TextInput
@@ -77,11 +96,21 @@ export default function LoginScreen({ navigation }) {
       <TouchableOpacity onPress={onLogin} style={styles.btn} activeOpacity={0.85}>
         <Text style={styles.btnText}>{t('login') || 'Login'}</Text>
       </TouchableOpacity>
-    </AuthLayout>
+      <View style={{ marginTop: 12, alignItems: 'center' }}>
+        <Text style={{ color: theme.colors.muted }}>
+          {(t('no_account') || "Don't have an account?") + ' '}
+          <Text style={{ color: theme.colors.primary, fontWeight: '700' }} onPress={() => navigation.navigate('Register')}>
+            {t('create_account') || 'Create account'}
+          </Text>
+        </Text>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  title: { fontSize: 22, fontWeight: '800', color: theme.colors.text, marginBottom: 6 },
+  subtitle: { color: theme.colors.muted, marginBottom: 16 },
   field: { marginBottom: 12 },
   label: { color: theme.colors.muted, marginBottom: 6, fontWeight: '600' },
   input: { borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, paddingVertical: 12, borderRadius: 10, backgroundColor: theme.colors.card, color: theme.colors.text },

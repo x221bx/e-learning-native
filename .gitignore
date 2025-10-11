@@ -16,5 +16,7 @@ yarn-error.log*
 *.log
 tmp_app_slice*.js
 tmp_*.js
-.DS_Store
 
+# OS files
+.DS_Store
+Thumbs.db

@@ -19,14 +19,14 @@ const userSlice = createSlice({
       state.user = user;
       state.isAuthenticated = !!user;
       state.isGuest = false;
-      state.isAdmin = Boolean(user?.role === 'admin');
+      state.isAdmin = Boolean(user?.role === 'admin' || user?.role === 'teacher');
     },
     registerSuccess(state, action) {
       const user = action.payload || null;
       state.user = user;
       state.isAuthenticated = !!user;
       state.isGuest = false;
-      state.isAdmin = Boolean(user?.role === 'admin');
+      state.isAdmin = Boolean(user?.role === 'admin' || user?.role === 'teacher');
     },
     continueAsGuest(state) {
       state.user = null;
@@ -48,7 +48,7 @@ const userSlice = createSlice({
     updateProfile(state, action) {
       const updates = action.payload || {};
       state.user = { ...state.user, ...updates };
-      if (updates?.role) state.isAdmin = Boolean(updates.role === 'admin');
+      if (updates?.role) state.isAdmin = Boolean(updates.role === 'admin' || updates.role === 'teacher');
     },
 
     joinCourse(state, action) {
