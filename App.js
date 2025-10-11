@@ -68,19 +68,6 @@ function CustomDrawerContent(props) {
         <Text style={{ fontWeight: '800', fontSize: 16 }}>{t('hello_name', { name })} 👋</Text>
       </View>
       <DrawerItemList {...props} />
-      {!isAuthenticated ? (
-        <DrawerItem
-          label={t('login')}
-          icon={({ color, size }) => <Ionicons name="log-in-outline" color={color} size={size} />}
-          onPress={() => props.navigation.navigate('Login')}
-        />
-      ) : (
-        <DrawerItem
-          label={t('logout')}
-          icon={({ color, size }) => <Ionicons name="log-out-outline" color={color} size={size} />}
-          onPress={() => props.navigation.navigate('Logout')}
-        />
-      )}
     </DrawerContentScrollView>
   );
 }
@@ -229,6 +216,7 @@ function DrawerNavigator() {
   const isAdmin = useSelector((s) => s.user?.isAdmin);
   return (
     <Drawer.Navigator
+      initialRouteName={isAuthenticated ? 'HomeTabs' : 'Welcome'}
       useLegacyImplementation={false}
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
@@ -240,6 +228,12 @@ function DrawerNavigator() {
     >
       <Drawer.Screen name="HomeTabs" component={MainTabs} options={{ title: t('home') }} />
       <Drawer.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
+      {!isAuthenticated ? (
+        <>
+          <Drawer.Screen name="Welcome" component={WelcomeScreen} options={{ title: 'Welcome' }} />
+          <Drawer.Screen name="Register" component={RegisterScreen} options={{ title: t('create_account') || 'Create Account' }} />
+        </>
+      ) : null}
       {isAdmin ? (
         <Drawer.Screen name="AdminPanel" component={AdminStack} options={{ title: t('admin') }} />
       ) : null}
