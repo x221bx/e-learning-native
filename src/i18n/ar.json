@@ -87,4 +87,12 @@
   ,"messages": "الرسائل"
   ,"teacher_profile": "ملف المدرس"
   ,"dashboard": "لوحة المعلومات"
+  ,"email_invalid": "بريد إلكتروني غير صالح"
+  ,"password_required": "كلمة المرور مطلوبة"
+  ,"show_password": "إظهار كلمة المرور"
+  ,"hide_password": "إخفاء كلمة المرور"
+  ,"loading": "جاري التحميل..."
+  ,"password": "كلمة المرور"
+  ,"password_placeholder": "••••••"
+  ,"email_placeholder": "you@example.com"
 }
