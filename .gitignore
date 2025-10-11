@@ -34,3 +34,11 @@ tmp/
 temp/
 *.tmp
 
+# OS/editor artifacts
+Thumbs.db
+*.orig
+.qodo/
+.npmrc
+.husky/
+.history/
+
