@@ -32,7 +32,7 @@ export default function LoginScreen({ navigation }) {
     };
     dispatch(loginSuccess(user));
     try { await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ user })); } catch {}
-    navigation.goBack();
+    if (navigation.canGoBack()) navigation.goBack(); else navigation.navigate('HomeTabs');
   };
 
   return (
@@ -90,3 +90,4 @@ const styles = StyleSheet.create({
   btn: { backgroundColor: theme.colors.primary, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
   btnText: { color: '#fff', fontWeight: '700' },
 });
+
