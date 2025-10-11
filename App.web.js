@@ -35,6 +35,7 @@ import AdminUsersScreen from './src/screens/admin/AdminUsersScreen';
 import AdminCategoriesScreen from './src/screens/admin/AdminCategoriesScreen';
 import AdminSettingsScreen from './src/screens/admin/AdminSettingsScreen';
 import LoginScreen from './src/screens/auth/LoginScreen';
+import RegisterScreen from './src/screens/auth/RegisterScreen';
 import LogoutScreen from './src/screens/auth/LogoutScreen';
 import AdminDashboardScreen from './src/screens/admin/AdminDashboardScreen';
 
@@ -148,9 +149,11 @@ function DrawerNavigator() {
       <Drawer.Screen name="HomeTabs" component={MainTabs} options={{ title: t('home') }} />
       <Drawer.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
       <Drawer.Screen name="Admin" component={AdminStack} options={{ title: 'Admin' }} />
-      <Drawer.Screen name="Register" component={RegisterScreen} options={{ title: t('create_account') || 'Create Account' }} />
       {!isAuthenticated ? (
-        <Drawer.Screen name="Login" component={LoginScreen} options={{ title: t('login') || 'Login' }} />
+        <>
+          <Drawer.Screen name="Login" component={LoginScreen} options={{ title: t('login') || 'Login' }} />
+          <Drawer.Screen name="Register" component={RegisterScreen} options={{ title: t('create_account') || 'Create Account' }} />
+        </>
       ) : (
         <Drawer.Screen name="Logout" component={LogoutScreen} options={{ title: t('logout') || 'Logout' }} />
       )}
