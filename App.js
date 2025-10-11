@@ -8,6 +8,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Platform, ActivityIndicator, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import QuickPrefsHeaderRight from './src/components/QuickPrefs';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
 import * as SplashScreen from 'expo-splash-screen';
@@ -41,7 +42,7 @@ import theme from './src/theme';
 import { t } from './src/i18n';
 import { withStore } from './src/store';
 // Auth removed: no user loading
-import { setDarkMode, setLocaleUI } from './src/store/uiSlice';
+import { setDarkMode, setLocaleUI, setPrimaryColor } from './src/store/uiSlice';
 
 const Tab = createBottomTabNavigator();
 const Stack = Platform.OS === 'web' ? createStackNavigator() : createNativeStackNavigator();
@@ -51,7 +52,7 @@ const Drawer = createDrawerNavigator();
 
 function HomeStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{ headerRight: () => <QuickPrefsHeaderRight /> }}>
       <Stack.Screen name="HomeMain" component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ title: t('course') }} />
@@ -63,7 +64,7 @@ function HomeStack() {
 
 function SearchStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{ headerRight: () => <QuickPrefsHeaderRight /> }}>
       <Stack.Screen name="SearchMain" component={SearchScreen} options={{ headerShown: false }} />
       <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ title: t('search') }} />
       <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ headerShown: false }} />
@@ -74,7 +75,7 @@ function SearchStack() {
 
 function AdminStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{ headerRight: () => <QuickPrefsHeaderRight /> }}>
       <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ title: 'Admin' }} />
       <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} options={{ title: t('admin') }} />
       <Stack.Screen name="AdminCourseForm" component={CourseFormScreen} options={{ title: t('course') }} />
@@ -153,6 +154,10 @@ function AppContent() {
             dispatch(setLocaleUI(lc));
             try { require('./src/i18n').setLocale(lc); } catch {}
           }
+        } catch {}
+        try {
+          const uc = await AsyncStorage.getItem('@elearning_user_primary_color');
+          if (uc) dispatch(setPrimaryColor(uc));
         } catch {}
       } catch (error) {
         // ignore

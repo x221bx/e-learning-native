@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import theme from '../theme';
 import { useColors } from '../theme/hooks';
@@ -9,6 +9,9 @@ import { CourseCardVertical } from '../components/CourseCard';
 import { useSelector, useDispatch } from 'react-redux';
 import { setAdmin } from '../store/userSlice';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setPrimaryColor, setDarkMode, setLocaleUI } from '../store/uiSlice';
+import { setLocale, getLocale } from '../i18n';
 
 export default function ProfileScreen({ navigation }) {
   const colors = useColors();
@@ -20,6 +23,32 @@ export default function ProfileScreen({ navigation }) {
   const favCourses = courses.filter((c) => favIds.includes(c.id));
 
   const handleLogout = () => {};
+
+  // Load saved user color on mount (if any)
+  useEffect(() => {
+    (async () => {
+      try {
+        const c = await AsyncStorage.getItem('@elearning_user_primary_color');
+        if (c) dispatch(setPrimaryColor(c));
+      } catch {}
+    })();
+  }, [dispatch]);
+
+  // Local color input for manual change
+  const [colorInput, setColorInput] = useState('');
+  const applyColor = async () => {
+    const c = (colorInput || '').trim();
+    if (!c) return;
+    dispatch(setPrimaryColor(c));
+    try { await AsyncStorage.setItem('@elearning_user_primary_color', c); } catch {}
+  };
+
+  const toggleLocale = () => {
+    const current = getLocale();
+    const next = current === 'ar' ? 'en' : 'ar';
+    setLocale(next);
+    dispatch(setLocaleUI(next));
+  };
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
@@ -82,6 +111,28 @@ export default function ProfileScreen({ navigation }) {
       )}
       
       <LanguageSwitcher />
+
+      {/* User theme controls */}
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('appearance') || 'Appearance'}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <TextInput
+          placeholder="#6C63FF"
+          placeholderTextColor={colors.muted}
+          value={colorInput}
+          onChangeText={setColorInput}
+          style={{ flex: 1, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card, color: colors.text, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 }}
+        />
+        <TouchableOpacity onPress={applyColor} style={{ backgroundColor: colors.primary, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 8 }}>
+          <Text style={{ color: '#fff', fontWeight: '700' }}>{t('apply') || 'Apply'}</Text>
+        </TouchableOpacity>
+      </View>
+      <TouchableOpacity onPress={() => dispatch(setDarkMode(!useSelector((s)=>s.ui.darkMode)))} style={{ marginTop: 8 }}>
+        <Text style={{ color: colors.primary, fontWeight: '700' }}>{t('toggle_dark_mode') || 'Toggle Dark Mode'}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={toggleLocale} style={{ marginTop: 8 }}>
+        <Text style={{ color: colors.primary, fontWeight: '700' }}>{t('toggle_language') || 'Toggle Language'}</Text>
+      </TouchableOpacity>
+
       <View style={{ height: 40 }} />
     </ScrollView>
   );
