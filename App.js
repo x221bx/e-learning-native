@@ -153,10 +153,20 @@ function LogoutScreen({ navigation }) {
 
 function AuthStack() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: true, title: t('login') }} />
-      <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: true, title: t('create_account') || 'Create Account' }} />
+    <Stack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerShown: true,
+        headerRight: () => <QuickPrefsHeaderRight />,
+        headerLeft: () => (
+          <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
+            <Ionicons name="menu" size={22} color={theme.colors.text} />
+          </TouchableOpacity>
+        ),
+      })}
+    >
+      <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ title: 'Welcome' }} />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ title: t('login') }} />
+      <Stack.Screen name="Register" component={RegisterScreen} options={{ title: t('create_account') || 'Create Account' }} />
     </Stack.Navigator>
   );
 }
@@ -216,7 +226,7 @@ function DrawerNavigator() {
   const isAdmin = useSelector((s) => s.user?.isAdmin);
   return (
     <Drawer.Navigator
-      initialRouteName={isAuthenticated ? 'HomeTabs' : 'Welcome'}
+      initialRouteName={isAuthenticated ? 'HomeTabs' : 'WelcomeStack'}
       useLegacyImplementation={false}
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
@@ -229,19 +239,14 @@ function DrawerNavigator() {
       <Drawer.Screen name="HomeTabs" component={MainTabs} options={{ title: t('home') }} />
       <Drawer.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
       {!isAuthenticated ? (
-        <>
-          <Drawer.Screen name="Welcome" component={WelcomeScreen} options={{ title: 'Welcome' }} />
-          <Drawer.Screen name="Register" component={RegisterScreen} options={{ title: t('create_account') || 'Create Account' }} />
-        </>
+        <Drawer.Screen name="WelcomeStack" component={AuthStack} options={{ title: 'Welcome' }} />
       ) : null}
       {isAdmin ? (
         <Drawer.Screen name="AdminPanel" component={AdminStack} options={{ title: t('admin') }} />
       ) : null}
-      {!isAuthenticated ? (
-        <Drawer.Screen name="Login" component={LoginScreen} options={{ title: t('login') }} />
-      ) : (
+      {isAuthenticated ? (
         <Drawer.Screen name="Logout" component={LogoutScreen} options={{ title: t('logout') }} />
-      )}
+      ) : null}
     </Drawer.Navigator>
   );
 }
@@ -342,7 +347,7 @@ function AppContent() {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: darkMode ? '#111' : theme.colors.background }}>
       <NavigationContainer theme={navTheme} key={locale || 'en'}>
         <StatusBar style={darkMode ? 'light' : 'dark'} />
-        {(isAuthenticated || isGuest) ? <DrawerNavigator /> : <AuthStack />}
+        <DrawerNavigator />
       </NavigationContainer>
     </GestureHandlerRootView>
   );
