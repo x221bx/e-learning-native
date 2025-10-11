@@ -4,6 +4,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors } from '../../theme/hooks';
 import theme from '../../theme';
+import { useSelector } from 'react-redux';
 
 // AdminButton: primary, danger, outline variants
 export function AdminButton({ label, icon, onPress, variant = 'primary', style, textStyle }) {
@@ -80,6 +81,7 @@ function AdminTopNav() {
 // Admin layout with common padding, header and optional actions
 export default function AdminLayout({ title, subtitle, actions, children, scrollable = true, contentStyle }) {
   const colors = useColors();
+  const isAdmin = useSelector((s) => s.user?.isAdmin);
   const Header = (
     <View style={styles.header}>
       <View style={{ flex: 1 }}>
@@ -97,7 +99,7 @@ export default function AdminLayout({ title, subtitle, actions, children, scroll
   const Content = (
     <View style={[styles.container, { backgroundColor: colors.background }]}> 
       {Header}
-      <AdminTopNav />
+      {isAdmin ? <AdminTopNav /> : null}
       <View style={[styles.content, contentStyle]}>{children}</View>
     </View>
   );

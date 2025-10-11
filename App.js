@@ -107,6 +107,7 @@ function DrawerNavigator() {
 }
 
 function MainTabs() {
+  const isAdmin = useSelector((s) => s.user?.isAdmin);
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -131,7 +132,9 @@ function MainTabs() {
       <Tab.Screen name="Search" component={SearchStack} options={{ tabBarLabel: t('search') }} />
       <Tab.Screen name="MyCourses" component={MyCoursesScreen} options={{ headerShown: true, headerTitle: t('my_courses'), tabBarLabel: t('my_courses') }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ headerShown: true, headerTitle: t('profile'), tabBarLabel: t('profile') }} />
-      <Tab.Screen name="Admin" component={AdminStack} options={{ headerShown: false, tabBarLabel: 'Admin' }} />
+      {isAdmin ? (
+        <Tab.Screen name="Admin" component={AdminStack} options={{ headerShown: false, tabBarLabel: 'Admin' }} />
+      ) : null}
     </Tab.Navigator>
   );
 }
