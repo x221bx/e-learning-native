@@ -54,16 +54,16 @@ function HomeStack() {
   return (
     <Stack.Navigator
       screenOptions={({ navigation }) => ({
-        headerRight: () => <QuickPrefsHeaderRight />,
+        headerShown: true, headerStyle: { backgroundColor: theme.colors.primary }, headerTintColor: '#fff', headerTitleStyle: { color: '#fff', fontWeight: '700' }, headerRight: () => <QuickPrefsHeaderRight />,
         headerLeft: () => (
           <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
-            <Ionicons name="menu" size={22} color={theme.colors.text} />
+            <Ionicons name="menu" size={22} color={'#fff'} />
           </TouchableOpacity>
         ),
       })}
     >
-      <Stack.Screen name="HomeMain" component={HomeScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="HomeMain" component={HomeScreen}  />
+      <Stack.Screen name="CourseDetails" component={CourseDetailsScreen}  />
       <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ title: t('course') }} />
       <Stack.Screen name="TeacherProfile" component={TeacherProfileScreen} options={{ title: t('teacher_profile') }} />
       <Stack.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
@@ -76,17 +76,17 @@ function SearchStack() {
     <Stack.Navigator
       screenOptions={({ navigation }) => ({
         headerShown: true,
-        headerRight: () => <QuickPrefsHeaderRight />,
+        headerShown: true, headerStyle: { backgroundColor: theme.colors.primary }, headerTintColor: '#fff', headerTitleStyle: { color: '#fff', fontWeight: '700' }, headerRight: () => <QuickPrefsHeaderRight />,
         headerLeft: () => (
           <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
-            <Ionicons name="menu" size={22} color={theme.colors.text} />
+            <Ionicons name="menu" size={22} color={'#fff'} />
           </TouchableOpacity>
         ),
       })}
     >
       <Stack.Screen name="SearchMain" component={SearchScreen} />
       <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ title: t('search') }} />
-      <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="CourseDetails" component={CourseDetailsScreen}  />
       <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ title: t('course') }} />
     </Stack.Navigator>
   );
@@ -97,10 +97,10 @@ function AuthStack() {
     <Stack.Navigator
       screenOptions={({ navigation }) => ({
         headerShown: true,
-        headerRight: () => <QuickPrefsHeaderRight />,
+        headerShown: true, headerStyle: { backgroundColor: theme.colors.primary }, headerTintColor: '#fff', headerTitleStyle: { color: '#fff', fontWeight: '700' }, headerRight: () => <QuickPrefsHeaderRight />,
         headerLeft: () => (
           <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
-            <Ionicons name="menu" size={22} color={theme.colors.text} />
+            <Ionicons name="menu" size={22} color={'#fff'} />
           </TouchableOpacity>
         ),
       })}
@@ -117,10 +117,10 @@ function AdminStack() {
     <Stack.Navigator
       screenOptions={({ navigation }) => ({
         headerShown: true,
-        headerRight: () => <QuickPrefsHeaderRight />,
+        headerShown: true, headerStyle: { backgroundColor: theme.colors.primary }, headerTintColor: '#fff', headerTitleStyle: { color: '#fff', fontWeight: '700' }, headerRight: () => <QuickPrefsHeaderRight />,
         headerLeft: () => (
           <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
-            <Ionicons name="menu" size={22} color={theme.colors.text} />
+            <Ionicons name="menu" size={22} color={'#fff'} />
           </TouchableOpacity>
         ),
       })}
@@ -248,4 +248,5 @@ function App() {
 }
 
 export default withStore(App);
+
 
