@@ -48,7 +48,7 @@ export default function RegisterScreen({ navigation }) {
         <View style={{ marginTop: 12, alignItems: 'center' }}>
           <Text style={{ color: theme.colors.muted }}>
             {(t('have_account') || 'Already have an account?') + ' '}
-            <Text style={{ color: theme.colors.primary, fontWeight: '700' }} onPress={() => navigation.replace('Login')}>
+            <Text style={{ color: theme.colors.primary, fontWeight: '700' }} onPress={() => navigation.navigate('Login')}>
               {t('login') || 'Login'}
             </Text>
           </Text>
@@ -107,3 +107,4 @@ const styles = StyleSheet.create({
   btn: { backgroundColor: theme.colors.primary, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
   btnText: { color: '#fff', fontWeight: '700' },
 });
+
