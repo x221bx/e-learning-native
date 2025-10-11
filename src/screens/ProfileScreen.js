@@ -7,7 +7,7 @@ import { t } from '../i18n';
 import { courses } from '../mock/data';
 import { CourseCardVertical } from '../components/CourseCard';
 import { useSelector, useDispatch } from 'react-redux';
-import { setAdmin } from '../store/userSlice';
+import { setAdmin, logout } from '../store/userSlice';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setPrimaryColor, setDarkMode, setLocaleUI } from '../store/uiSlice';
@@ -17,12 +17,18 @@ export default function ProfileScreen({ navigation }) {
   const colors = useColors();
   const favIds = useSelector((s) => s.favorites.ids);
   const isAdmin = useSelector((s) => s.user.isAdmin);
-  const user = null; // Auth removed
-  const isGuest = false; // No guest mode
+  const user = useSelector((s) => s.user.user);
+  const isAuthenticated = useSelector((s) => s.user.isAuthenticated);
+  const isGuest = useSelector((s) => s.user.isGuest);
   const dispatch = useDispatch();
   const favCourses = courses.filter((c) => favIds.includes(c.id));
 
-  const handleLogout = () => {};
+  const handleLogout = async () => {
+    try {
+      dispatch(logout());
+      try { await AsyncStorage.removeItem('@elearning_auth_state'); } catch {}
+    } catch {}
+  };
 
   // Load saved user color on mount (if any)
   useEffect(() => {
@@ -76,7 +82,18 @@ export default function ProfileScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Auth removed: no logout button */}
+      {/* Auth actions */}
+      {isAuthenticated ? (
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton} activeOpacity={0.85}>
+          <Ionicons name="log-out-outline" size={20} color={theme.colors.danger} />
+          <Text style={styles.logoutText}>{t('logout')}</Text>
+        </TouchableOpacity>
+      ) : isGuest ? (
+        <TouchableOpacity onPress={() => navigation.navigate('Login')} style={[styles.logoutButton, { backgroundColor: theme.colors.surface }]} activeOpacity={0.85}>
+          <Ionicons name="log-in-outline" size={20} color={theme.colors.primary} />
+          <Text style={[styles.logoutText, { color: theme.colors.primary }]}>{t('login') || 'Login'}</Text>
+        </TouchableOpacity>
+      ) : null}
 
       <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('saved_courses')}</Text>
       {favCourses.length === 0 && (

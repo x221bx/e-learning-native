@@ -76,7 +76,7 @@ export default function AdminUsersScreen() {
   );
 
   return (
-    <AdminLayout title="Users" subtitle="Approve teachers and manage invitations">
+    <AdminLayout title="Users" subtitle="Approve teachers and manage invitations" scrollable={false}>
       <AdminCard title="Teacher Invite Code">
         <View style={styles.inviteRow}>
           <TextInput

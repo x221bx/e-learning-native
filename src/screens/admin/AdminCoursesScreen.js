@@ -95,6 +95,7 @@ export default function AdminCoursesScreen({ navigation }) {
       title="Courses"
       subtitle="Manage, filter and bulk edit courses"
       actions={[{ label: t('add_course'), icon: 'add', onPress: () => navigation.navigate('AdminCourseForm') }]}
+      scrollable={false}
     >
       <AdminCard>
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
