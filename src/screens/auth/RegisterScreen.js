@@ -34,7 +34,10 @@ export default function RegisterScreen({ navigation }) {
     };
     dispatch(registerSuccess(user));
     try { await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ user })); } catch {}
-    navigation.goBack();
+    try {
+      if (navigation.canGoBack()) navigation.goBack();
+      else navigation.navigate('Welcome');
+    } catch {}
   };
 
   return (
@@ -104,4 +107,3 @@ const styles = StyleSheet.create({
   btn: { backgroundColor: theme.colors.primary, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
   btnText: { color: '#fff', fontWeight: '700' },
 });
-

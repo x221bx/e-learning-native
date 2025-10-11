@@ -29,6 +29,7 @@ import CourseDetailsScreen from './src/screens/CourseDetailsScreen';
 import CoursePlayScreen from './src/screens/CoursePlayScreen';
 import TeacherProfileScreen from './src/screens/TeacherProfileScreen';
 import MessagesScreen from './src/screens/MessagesScreen';
+import WelcomeScreen from './src/screens/auth/WelcomeScreen';
 import AdminCoursesScreen from './src/screens/admin/AdminCoursesScreen';
 import CourseFormScreen from './src/screens/admin/CourseFormScreen';
 import AdminUsersScreen from './src/screens/admin/AdminUsersScreen';
@@ -51,7 +52,16 @@ const Drawer = createDrawerNavigator();
 
 function HomeStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerRight: () => <QuickPrefsHeaderRight /> }}>
+    <Stack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerRight: () => <QuickPrefsHeaderRight />,
+        headerLeft: () => (
+          <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
+            <Ionicons name="menu" size={22} color={theme.colors.text} />
+          </TouchableOpacity>
+        ),
+      })}
+    >
       <Stack.Screen name="HomeMain" component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ title: t('course') }} />
@@ -138,6 +148,7 @@ function DrawerNavigator() {
   const isAuthenticated = useSelector((s) => s.user?.isAuthenticated);
   return (
     <Drawer.Navigator
+      initialRouteName={isAuthenticated ? 'HomeTabs' : 'Welcome'}
       useLegacyImplementation={false}
       screenOptions={{
         headerShown: false,
@@ -146,6 +157,9 @@ function DrawerNavigator() {
         lazy: false,
       }}
     >
+      {!isAuthenticated ? (
+        <Drawer.Screen name="Welcome" component={WelcomeScreen} options={{ title: 'Welcome' }} />
+      ) : null}
       <Drawer.Screen name="HomeTabs" component={MainTabs} options={{ title: t('home') }} />
       <Drawer.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
       <Drawer.Screen name="Admin" component={AdminStack} options={{ title: 'Admin' }} />
