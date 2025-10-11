@@ -45,6 +45,7 @@ import AdminLiveScreen from './src/screens/admin/AdminLiveScreen';
 import AdminScheduleScreen from './src/screens/admin/AdminScheduleScreen';
 import LiveNowScreen from './src/screens/LiveNowScreen';
 import ScheduleScreen from './src/screens/ScheduleScreen';
+import TeachersScreen from './src/screens/TeachersScreen';
 
 import theme from './src/theme';
 import { t } from './src/i18n';
@@ -104,6 +105,38 @@ function AdminStack() {
   );
 }
 
+function MessagesStack() {
+  return (
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
+      <Stack.Screen name="MessagesMain" component={MessagesScreen} options={{ title: t('messages') }} />
+    </Stack.Navigator>
+  );
+}
+
+function LiveStack() {
+  return (
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
+      <Stack.Screen name="LiveNowMain" component={LiveNowScreen} options={{ title: t('live_now') || 'Live Now' }} />
+    </Stack.Navigator>
+  );
+}
+
+function ScheduleStack() {
+  return (
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
+      <Stack.Screen name="ScheduleMain" component={ScheduleScreen} options={{ title: t('schedule') || 'Schedule' }} />
+    </Stack.Navigator>
+  );
+}
+
+function TeachersStack() {
+  return (
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
+      <Stack.Screen name="TeachersMain" component={TeachersScreen} options={{ title: 'Teachers' }} />
+    </Stack.Navigator>
+  );
+}
+
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -152,9 +185,10 @@ function DrawerNavigator() {
       ) : null}
 
       <Drawer.Screen name="HomeTabs" component={MainTabs} options={{ title: t('home') }} />
-      <Drawer.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
-      <Drawer.Screen name="LiveNow" component={LiveNowScreen} options={{ title: t('live_now') || 'Live Now' }} />
-      <Drawer.Screen name="Schedule" component={ScheduleScreen} options={{ title: t('schedule') || 'Schedule' }} />
+      <Drawer.Screen name="Messages" component={MessagesStack} options={{ title: t('messages') }} />
+      <Drawer.Screen name="LiveNow" component={LiveStack} options={{ title: t('live_now') || 'Live Now' }} />
+      <Drawer.Screen name="Schedule" component={ScheduleStack} options={{ title: t('schedule') || 'Schedule' }} />
+      <Drawer.Screen name="Teachers" component={TeachersStack} options={{ title: 'Teachers' }} />
 
       {isAdmin ? (
         <Drawer.Screen name="Admin" component={AdminStack} options={{ title: 'Admin' }} />

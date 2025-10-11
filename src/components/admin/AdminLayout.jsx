@@ -4,6 +4,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors } from '../../theme/hooks';
 import theme from '../../theme';
+import { t } from '../../i18n';
 import { useSelector } from 'react-redux';
 
 // AdminButton: primary, danger, outline variants
@@ -56,13 +57,13 @@ function AdminTopNav() {
   const nav = useNavigation();
   const route = useRoute();
   const items = [
-    { key: 'AdminDashboard', label: 'Dashboard', icon: 'speedometer' },
-    { key: 'AdminCourses', label: 'Courses', icon: 'book' },
-    { key: 'AdminUsers', label: 'Users', icon: 'people' },
-    { key: 'AdminCategories', label: 'Categories', icon: 'pricetags' },
-    { key: 'AdminSettings', label: 'Settings', icon: 'settings' },
-    { key: 'AdminLive', label: 'Live', icon: 'radio' },
-    { key: 'AdminSchedule', label: 'Schedule', icon: 'calendar' },
+    { key: 'AdminDashboard', label: t('dashboard') || 'Dashboard', icon: 'speedometer' },
+    { key: 'AdminCourses', label: t('courses') || 'Courses', icon: 'book' },
+    { key: 'AdminUsers', label: t('users') || 'Users', icon: 'people' },
+    { key: 'AdminCategories', label: t('categories') || 'Categories', icon: 'pricetags' },
+    { key: 'AdminSettings', label: t('settings') || 'Settings', icon: 'settings' },
+    { key: 'AdminLive', label: t('live_now') || 'Live', icon: 'radio' },
+    { key: 'AdminSchedule', label: t('schedule') || 'Schedule', icon: 'calendar' },
   ];
   return (
     <View style={[styles.topNav, { borderBottomColor: colors.border }]}>

@@ -30,14 +30,15 @@ export default function ScheduleScreen() {
           keyExtractor={(i, idx) => i.id || String(idx)}
           renderItem={({ item }) => (
             <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+              <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>{item.title}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
                 <Ionicons name="calendar" size={14} color={colors.primary} />
-                <Text style={{ marginLeft: 6, color: colors.muted }}>{item.date} • {item.time}</Text>
+                <Text style={[styles.meta, { color: colors.muted }]}>{item.date} • {item.time}</Text>
               </View>
             </View>
           )}
-          ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          contentContainerStyle={{ paddingVertical: theme.spacing.base }}
         />
       )}
     </View>
@@ -45,8 +46,8 @@ export default function ScheduleScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: theme.spacing.base },
-  card: { borderWidth: 1, borderRadius: theme.radius.lg, padding: 12 },
-  title: { fontWeight: '700' },
+  container: { flex: 1, paddingHorizontal: theme.spacing.base },
+  card: { borderWidth: 1, borderRadius: theme.radius.lg, padding: theme.spacing.base, ...theme.shadow.card },
+  title: { fontWeight: '800' },
+  meta: { marginLeft: 6 },
 });
-
