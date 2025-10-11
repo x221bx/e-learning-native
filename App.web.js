@@ -9,6 +9,7 @@ import { Platform, ActivityIndicator, View, TouchableOpacity } from 'react-nativ
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import QuickPrefsHeaderRight from './src/components/QuickPrefs';
+import WelcomeHeaderRight from './src/components/WelcomeHeaderRight';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
 import * as SplashScreen from 'expo-splash-screen';
@@ -54,18 +55,22 @@ function HomeStack() {
   return (
     <Stack.Navigator
       screenOptions={({ navigation }) => ({
+        headerShown: true,
+        headerStyle: { backgroundColor: theme.colors.primary },
+        headerTintColor: '#fff',
+        headerTitleStyle: { color: '#fff', fontWeight: '700' },
         headerRight: () => <QuickPrefsHeaderRight />,
         headerLeft: () => (
           <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
-            <Ionicons name="menu" size={22} color={theme.colors.text} />
+            <Ionicons name="menu" size={22} color={'#fff'} />
           </TouchableOpacity>
         ),
       })}
     >
       <Stack.Screen name="HomeMain" component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ title: t('course') }} />
-      <Stack.Screen name="TeacherProfile" component={TeacherProfileScreen} options={{ title: t('teacher_profile') }} />
+      <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="TeacherProfile" component={TeacherProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
     </Stack.Navigator>
   );
@@ -76,10 +81,10 @@ function SearchStack() {
     <Stack.Navigator
       screenOptions={({ navigation }) => ({
         headerShown: true,
-        headerRight: () => <QuickPrefsHeaderRight />,
+        headerShown: true, headerStyle: { backgroundColor: theme.colors.primary }, headerTintColor: '#fff', headerTitleStyle: { color: '#fff', fontWeight: '700' }, headerRight: () => <QuickPrefsHeaderRight />,
         headerLeft: () => (
           <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
-            <Ionicons name="menu" size={22} color={theme.colors.text} />
+            <Ionicons name="menu" size={22} color={'#fff'} />
           </TouchableOpacity>
         ),
       })}
@@ -87,7 +92,35 @@ function SearchStack() {
       <Stack.Screen name="SearchMain" component={SearchScreen} />
       <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ title: t('search') }} />
       <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ title: t('course') }} />
+      <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ headerShown: false }} />
+    </Stack.Navigator>
+  );
+}
+
+function AuthStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerShown: true,
+        headerShown: true, headerStyle: { backgroundColor: theme.colors.primary }, headerTintColor: '#fff', headerTitleStyle: { color: '#fff', fontWeight: '700' }, headerRight: () => <QuickPrefsHeaderRight />,
+        headerLeft: () => (
+          <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
+            <Ionicons name="menu" size={22} color={'#fff'} />
+          </TouchableOpacity>
+        ),
+      })}
+    >
+      <Stack.Screen
+        name="Welcome"
+        component={WelcomeScreen}
+        options={({ navigation }) => ({
+          title: 'Welcome',
+          headerRight: () => <WelcomeHeaderRight navigation={navigation} />,
+          headerLeft: () => null,
+        })}
+      />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }
@@ -95,15 +128,7 @@ function SearchStack() {
 function AdminStack() {
   return (
     <Stack.Navigator
-      screenOptions={({ navigation }) => ({
-        headerShown: true,
-        headerRight: () => <QuickPrefsHeaderRight />,
-        headerLeft: () => (
-          <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
-            <Ionicons name="menu" size={22} color={theme.colors.text} />
-          </TouchableOpacity>
-        ),
-      })}
+      screenOptions={({ navigation }) => ({ headerShown: false })}
     >
       <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ title: 'Admin' }} />
       <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} options={{ title: t('admin') }} />
@@ -149,7 +174,7 @@ function DrawerNavigator() {
   const isAdmin = useSelector((s) => s.user?.isAdmin);
   return (
     <Drawer.Navigator
-      initialRouteName={isAuthenticated ? 'HomeTabs' : 'Welcome'}
+      initialRouteName={isAuthenticated ? 'HomeTabs' : 'WelcomeStack'}
       useLegacyImplementation={false}
       screenOptions={{
         headerShown: false,
@@ -159,13 +184,16 @@ function DrawerNavigator() {
       }}
     >
       {!isAuthenticated ? (
-        <Drawer.Screen name="Welcome" component={WelcomeScreen} options={{ title: 'Welcome' }} />
+        <Drawer.Screen name="WelcomeStack" component={AuthStack} options={{ title: 'Welcome' }} />
       ) : null}
+
       <Drawer.Screen name="HomeTabs" component={MainTabs} options={{ title: t('home') }} />
       <Drawer.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
+
       {isAdmin ? (
         <Drawer.Screen name="Admin" component={AdminStack} options={{ title: 'Admin' }} />
       ) : null}
+
       {!isAuthenticated ? (
         <>
           <Drawer.Screen name="Login" component={LoginScreen} options={{ title: t('login') || 'Login' }} />
@@ -236,4 +264,5 @@ function App() {
 }
 
 export default withStore(App);
+
 

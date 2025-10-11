@@ -105,13 +105,13 @@ export default function AdminLayout({ title, subtitle, actions, children, scroll
   );
 
   if (scrollable) {
-    return <ScrollView contentContainerStyle={{ paddingBottom: theme.spacing.xxl }}>{Content}</ScrollView>;
+    return <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: theme.spacing.xxl }}>{Content}</ScrollView>;
   }
   return Content;
 }
 
 const styles = StyleSheet.create({
-  container: { padding: theme.spacing.base, minHeight: '100%' },
+  container: { padding: theme.spacing.base, minHeight: '100%', flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: theme.spacing.sm },
   title: { fontSize: theme.fontSize.xl, fontWeight: theme.fontWeight.extrabold },
   subtitle: { marginTop: 2 },
