@@ -61,6 +61,8 @@ function AdminTopNav() {
     { key: 'AdminUsers', label: 'Users', icon: 'people' },
     { key: 'AdminCategories', label: 'Categories', icon: 'pricetags' },
     { key: 'AdminSettings', label: 'Settings', icon: 'settings' },
+    { key: 'AdminLive', label: 'Live', icon: 'radio' },
+    { key: 'AdminSchedule', label: 'Schedule', icon: 'calendar' },
   ];
   return (
     <View style={[styles.topNav, { borderBottomColor: colors.border }]}>
