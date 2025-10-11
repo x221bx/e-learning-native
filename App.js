@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -37,7 +37,9 @@ import AdminCategoriesScreen from './src/screens/admin/AdminCategoriesScreen';
 import AdminSettingsScreen from './src/screens/admin/AdminSettingsScreen';
 import AdminDashboardScreen from './src/screens/admin/AdminDashboardScreen';
 import WelcomeScreen from './src/screens/auth/WelcomeScreen';
-// Inline auth screens defined below
+import LoginScreen from './src/screens/auth/LoginScreen';
+import RegisterScreen from './src/screens/auth/RegisterScreen';
+import LogoutScreen from './src/screens/auth/LogoutScreen';
 
 // Auth
 import { loginSuccess, continueAsGuest, logout } from './src/store/userSlice';
@@ -47,6 +49,7 @@ import { t } from './src/i18n';
 import { withStore } from './src/store';
 // Auth removed: no user loading
 import { setDarkMode, setLocaleUI, setPrimaryColor } from './src/store/uiSlice';
+import { openDrawer } from './src/utils/nav';
 
 const Tab = createBottomTabNavigator();
 const Stack = Platform.OS === 'web' ? createStackNavigator() : createNativeStackNavigator();
@@ -173,7 +176,11 @@ function AuthStack() {
 
 function HomeStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerRight: () => <QuickPrefsHeaderRight /> }}>
+    <Stack.Navigator screenOptions={({ navigation }) => ({ headerRight: () => <QuickPrefsHeaderRight />, headerLeft: () => (
+      <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
+        <Ionicons name="menu" size={22} color={theme.colors.text} />
+      </TouchableOpacity>
+    ) })}>
       <Stack.Screen name="HomeMain" component={HomeScreen} options={{ headerShown: false }} />
       <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ title: t('course') }} />
@@ -185,7 +192,11 @@ function HomeStack() {
 
 function SearchStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerRight: () => <QuickPrefsHeaderRight /> }}>
+    <Stack.Navigator screenOptions={({ navigation }) => ({ headerRight: () => <QuickPrefsHeaderRight />, headerLeft: () => (
+      <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
+        <Ionicons name="menu" size={22} color={theme.colors.text} />
+      </TouchableOpacity>
+    ) })}>
       <Stack.Screen name="SearchMain" component={SearchScreen} options={{ headerShown: false }} />
       <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ title: t('search') }} />
       <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ headerShown: false }} />
@@ -196,7 +207,11 @@ function SearchStack() {
 
 function AdminStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerRight: () => <QuickPrefsHeaderRight /> }}>
+    <Stack.Navigator screenOptions={({ navigation }) => ({ headerRight: () => <QuickPrefsHeaderRight />, headerLeft: () => (
+      <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
+        <Ionicons name="menu" size={22} color={theme.colors.text} />
+      </TouchableOpacity>
+    ) })}>
       <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ title: 'Admin' }} />
       <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} options={{ title: t('admin') }} />
       <Stack.Screen name="AdminCourseForm" component={CourseFormScreen} options={{ title: t('course') }} />
@@ -261,8 +276,8 @@ function MainTabs() {
     >
       <Tab.Screen name="Home" component={HomeStack} options={{ tabBarLabel: t('home') }} />
       <Tab.Screen name="Search" component={SearchStack} options={{ tabBarLabel: t('search') }} />
-      <Tab.Screen name="MyCourses" component={MyCoursesScreen} options={{ headerShown: true, headerTitle: t('my_courses'), tabBarLabel: t('my_courses') }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ headerShown: true, headerTitle: t('profile'), tabBarLabel: t('profile') }} />
+      <Tab.Screen name="MyCourses" component={MyCoursesScreen} options={{ headerShown: false, tabBarLabel: t('my_courses') }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false, tabBarLabel: t('profile') }} />
       {isAdmin ? (
         <Tab.Screen name="Admin" component={AdminStack} options={{ headerShown: false, tabBarLabel: 'Admin' }} />
       ) : null}
@@ -344,4 +359,5 @@ function App() {
 }
 
 export default withStore(App);
+
 

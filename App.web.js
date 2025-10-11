@@ -5,7 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { Platform, ActivityIndicator, View } from 'react-native';
+import { Platform, ActivityIndicator, View, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import QuickPrefsHeaderRight from './src/components/QuickPrefs';
@@ -34,10 +34,13 @@ import CourseFormScreen from './src/screens/admin/CourseFormScreen';
 import AdminUsersScreen from './src/screens/admin/AdminUsersScreen';
 import AdminCategoriesScreen from './src/screens/admin/AdminCategoriesScreen';
 import AdminSettingsScreen from './src/screens/admin/AdminSettingsScreen';
+import LoginScreen from './src/screens/auth/LoginScreen';
+import LogoutScreen from './src/screens/auth/LogoutScreen';
 import AdminDashboardScreen from './src/screens/admin/AdminDashboardScreen';
 
 import theme from './src/theme';
 import { t } from './src/i18n';
+import { openDrawer } from './src/utils/nav';
 import { withStore } from './src/store';
 import { setDarkMode, setLocaleUI } from './src/store/uiSlice';
 
@@ -59,8 +62,18 @@ function HomeStack() {
 
 function SearchStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerRight: () => <QuickPrefsHeaderRight /> }}>
-      <Stack.Screen name="SearchMain" component={SearchScreen} options={{ headerShown: false }} />
+    <Stack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerShown: true,
+        headerRight: () => <QuickPrefsHeaderRight />,
+        headerLeft: () => (
+          <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
+            <Ionicons name="menu" size={22} color={theme.colors.text} />
+          </TouchableOpacity>
+        ),
+      })}
+    >
+      <Stack.Screen name="SearchMain" component={SearchScreen} />
       <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ title: t('search') }} />
       <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ title: t('course') }} />
@@ -70,7 +83,17 @@ function SearchStack() {
 
 function AdminStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerRight: () => <QuickPrefsHeaderRight /> }}>
+    <Stack.Navigator
+      screenOptions={({ navigation }) => ({
+        headerShown: true,
+        headerRight: () => <QuickPrefsHeaderRight />,
+        headerLeft: () => (
+          <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
+            <Ionicons name="menu" size={22} color={theme.colors.text} />
+          </TouchableOpacity>
+        ),
+      })}
+    >
       <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ title: 'Admin' }} />
       <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} options={{ title: t('admin') }} />
       <Stack.Screen name="AdminCourseForm" component={CourseFormScreen} options={{ title: t('course') }} />
@@ -111,6 +134,7 @@ function MainTabs() {
 }
 
 function DrawerNavigator() {
+  const isAuthenticated = useSelector((s) => s.user?.isAuthenticated);
   return (
     <Drawer.Navigator
       useLegacyImplementation={false}
@@ -124,6 +148,11 @@ function DrawerNavigator() {
       <Drawer.Screen name="HomeTabs" component={MainTabs} options={{ title: t('home') }} />
       <Drawer.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
       <Drawer.Screen name="Admin" component={AdminStack} options={{ title: 'Admin' }} />
+      {!isAuthenticated ? (
+        <Drawer.Screen name="Login" component={LoginScreen} options={{ title: t('login') || 'Login' }} />
+      ) : (
+        <Drawer.Screen name="Logout" component={LogoutScreen} options={{ title: t('logout') || 'Logout' }} />
+      )}
     </Drawer.Navigator>
   );
 }
@@ -186,3 +215,4 @@ function App() {
 }
 
 export default withStore(App);
+
