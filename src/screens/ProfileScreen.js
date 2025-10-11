@@ -88,12 +88,12 @@ export default function ProfileScreen({ navigation }) {
           <Ionicons name="log-out-outline" size={20} color={theme.colors.danger} />
           <Text style={styles.logoutText}>{t('logout')}</Text>
         </TouchableOpacity>
-      ) : isGuest ? (
+      ) : (
         <TouchableOpacity onPress={() => navigation.navigate('Login')} style={[styles.logoutButton, { backgroundColor: theme.colors.surface }]} activeOpacity={0.85}>
           <Ionicons name="log-in-outline" size={20} color={theme.colors.primary} />
           <Text style={[styles.logoutText, { color: theme.colors.primary }]}>{t('login') || 'Login'}</Text>
         </TouchableOpacity>
-      ) : null}
+      )}
 
       <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('saved_courses')}</Text>
       {favCourses.length === 0 && (
@@ -199,3 +199,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+
