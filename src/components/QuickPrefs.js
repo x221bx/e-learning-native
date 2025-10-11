@@ -3,6 +3,7 @@ import { View, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import { setDarkMode, setLocaleUI, setPrimaryColor } from '../store/uiSlice';
 import { setLocale, getLocale } from '../i18n';
 import { useColors } from '../theme/hooks';
@@ -14,6 +15,8 @@ export default function QuickPrefsHeaderRight() {
   const colors = useColors();
   const locale = getLocale();
   const dark = useSelector((s) => s.ui.darkMode);
+  const isAuthenticated = useSelector((s) => s.user.isAuthenticated);
+  const navigation = useNavigation();
 
   const palette = useMemo(() => ['#6C63FF', '#FF6584', '#00D9C0', '#10B981', '#3B82F6', '#F59E0B'], []);
 
@@ -45,6 +48,15 @@ export default function QuickPrefsHeaderRight() {
       <TouchableOpacity onPress={toggleLocale}>
         <Ionicons name="language-outline" size={22} color={colors.text} />
       </TouchableOpacity>
+      {!isAuthenticated ? (
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <Ionicons name="log-in-outline" size={22} color={colors.text} />
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity onPress={() => navigation.navigate('Logout')}>
+          <Ionicons name="log-out-outline" size={22} color={colors.text} />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }

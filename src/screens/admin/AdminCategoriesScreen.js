@@ -66,7 +66,7 @@ export default function AdminCategoriesScreen() {
   );
 
   return (
-    <AdminLayout title="Categories" subtitle="Organize courses by category">
+    <AdminLayout title="Categories" subtitle="Organize courses by category" scrollable={false}>
       <AdminCard>
         <View style={styles.row}>
           <TextInput

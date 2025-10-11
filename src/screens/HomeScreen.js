@@ -27,10 +27,10 @@ export default function HomeScreen({ navigation }) {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const user = null; // Auth removed
+  const user = useSelector((s) => s.user.user);
   const favIds = useSelector((s) => s.favorites.ids);
   const wishlistItems = useSelector((s) => s.wishlist.items);
-  const isAuthenticated = true; // Always treat as authenticated (no auth layer)
+  const isAuthenticated = useSelector((s) => s.user.isAuthenticated);
   const dispatch = useDispatch();
   const darkMode = useSelector((s) => s.ui.darkMode);
   const hasUnread = useSelector((s) => s.ui.hasUnread);
@@ -66,8 +66,8 @@ export default function HomeScreen({ navigation }) {
   const onCourse = (c) => navigation.navigate('CourseDetails', { courseId: c.id });
   const onTeacher = (tch) => navigation.navigate('TeacherProfile', { teacherId: tch.id });
 
-  const name = 'Learner';
-  const avatarUri = 'https://i.pravatar.cc/100?img=5';
+  const name = (user?.name && String(user.name).trim()) || 'Learner';
+  const avatarUri = user?.avatar || 'https://i.pravatar.cc/100?img=5';
 
   return (
     <View style={[styles.wrapper, { backgroundColor: colors.background }] }>

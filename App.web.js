@@ -104,9 +104,8 @@ function MainTabs() {
     >
       <Tab.Screen name="Home" component={HomeStack} options={{ tabBarLabel: t('home') }} />
       <Tab.Screen name="Search" component={SearchStack} options={{ tabBarLabel: t('search') }} />
-      <Tab.Screen name="MyCourses" component={MyCoursesScreen} options={{ headerShown: true, headerTitle: t('my_courses'), tabBarLabel: t('my_courses') }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ headerShown: true, headerTitle: t('profile'), tabBarLabel: t('profile') }} />
-      <Tab.Screen name="Admin" component={AdminStack} options={{ headerShown: false, tabBarLabel: 'Admin' }} />
+      <Tab.Screen name="MyCourses" component={MyCoursesScreen} options={{ headerShown: false, tabBarLabel: t('my_courses') }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false, tabBarLabel: t('profile') }} />
     </Tab.Navigator>
   );
 }

@@ -4,8 +4,8 @@ import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createStackNavigator } from '@react-navigation/stack';
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import { Platform, ActivityIndicator, View } from 'react-native';
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem } from '@react-navigation/drawer';
+import { Platform, ActivityIndicator, View, Text, TextInput, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import QuickPrefsHeaderRight from './src/components/QuickPrefs';
@@ -36,7 +36,11 @@ import AdminUsersScreen from './src/screens/admin/AdminUsersScreen';
 import AdminCategoriesScreen from './src/screens/admin/AdminCategoriesScreen';
 import AdminSettingsScreen from './src/screens/admin/AdminSettingsScreen';
 import AdminDashboardScreen from './src/screens/admin/AdminDashboardScreen';
-// Auth screens removed
+import WelcomeScreen from './src/screens/auth/WelcomeScreen';
+// Inline auth screens defined below
+
+// Auth
+import { loginSuccess, continueAsGuest, logout } from './src/store/userSlice';
 
 import theme from './src/theme';
 import { t } from './src/i18n';
@@ -48,7 +52,124 @@ const Tab = createBottomTabNavigator();
 const Stack = Platform.OS === 'web' ? createStackNavigator() : createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
-// Auth navigator removed
+function CustomDrawerContent(props) {
+  const colors = theme.colors;
+  const isAuthenticated = useSelector((s) => s.user.isAuthenticated);
+  const isAdmin = useSelector((s) => s.user.isAdmin);
+  const user = useSelector((s) => s.user.user);
+  const name = (user?.name && String(user.name).trim()) || 'Learner';
+
+  return (
+    <DrawerContentScrollView {...props}>
+      <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
+        <Text style={{ fontWeight: '800', fontSize: 16 }}>{t('hello_name', { name })} 👋</Text>
+      </View>
+      <DrawerItemList {...props} />
+      {!isAuthenticated ? (
+        <DrawerItem
+          label={t('login')}
+          icon={({ color, size }) => <Ionicons name="log-in-outline" color={color} size={size} />}
+          onPress={() => props.navigation.navigate('Login')}
+        />
+      ) : (
+        <DrawerItem
+          label={t('logout')}
+          icon={({ color, size }) => <Ionicons name="log-out-outline" color={color} size={size} />}
+          onPress={() => props.navigation.navigate('Logout')}
+        />
+      )}
+    </DrawerContentScrollView>
+  );
+}
+
+// Inline Auth Screens
+function LoginScreen({ navigation }) {
+  const dispatch = useDispatch();
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+
+  const onLogin = async () => {
+    const user = {
+      id: Date.now(),
+      name: name || 'Learner',
+      email: email || 'user@example.com',
+      role: 'user',
+      avatar: 'https://i.pravatar.cc/150?img=3',
+    };
+    dispatch(loginSuccess(user));
+    try { await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ user })); } catch {}
+    navigation.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
+  };
+
+  return (
+    <View style={{ flex: 1, padding: 20, justifyContent: 'center' }}>
+      <Text style={{ fontSize: 22, fontWeight: '800', marginBottom: 10 }}>{t('login')}</Text>
+      <TextInput placeholder="Name" value={name} onChangeText={setName} style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginTop: 10 }} />
+      <TextInput placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginTop: 10 }} />
+      <TouchableOpacity onPress={onLogin} activeOpacity={0.85} style={{ marginTop: 16, backgroundColor: theme.colors.primary, paddingVertical: 12, borderRadius: 10, alignItems: 'center' }}>
+        <Text style={{ color: '#fff', fontWeight: '700' }}>{t('login')}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function RegisterScreen({ navigation }) {
+  const dispatch = useDispatch();
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+
+  const onRegister = async () => {
+    const user = {
+      id: Date.now(),
+      name: name || 'Learner',
+      email: email || 'user@example.com',
+      role: 'user',
+      avatar: 'https://i.pravatar.cc/150?img=4',
+    };
+    dispatch(loginSuccess(user));
+    try { await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ user })); } catch {}
+    navigation.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
+  };
+
+  return (
+    <View style={{ flex: 1, padding: 20, justifyContent: 'center' }}>
+      <Text style={{ fontSize: 22, fontWeight: '800', marginBottom: 10 }}>{t('create_account') || 'Create Account'}</Text>
+      <TextInput placeholder="Name" value={name} onChangeText={setName} style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginTop: 10 }} />
+      <TextInput placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginTop: 10 }} />
+      <TextInput placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry style={{ borderWidth: 1, borderColor: '#ddd', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginTop: 10 }} />
+      <TouchableOpacity onPress={onRegister} activeOpacity={0.85} style={{ marginTop: 16, backgroundColor: theme.colors.primary, paddingVertical: 12, borderRadius: 10, alignItems: 'center' }}>
+        <Text style={{ color: '#fff', fontWeight: '700' }}>{t('create_account') || 'Create Account'}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function LogoutScreen({ navigation }) {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const run = async () => {
+      dispatch(logout());
+      try { await AsyncStorage.removeItem('@elearning_auth_state'); } catch {}
+    };
+    run();
+  }, [dispatch]);
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <ActivityIndicator size="large" color={theme.colors.primary} />
+    </View>
+  );
+}
+
+function AuthStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: true, title: t('login') }} />
+      <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: true, title: t('create_account') || 'Create Account' }} />
+    </Stack.Navigator>
+  );
+}
 
 function HomeStack() {
   return (
@@ -89,9 +210,12 @@ function AdminStack() {
 // MessagesScreen is provided from src/screens/MessagesScreen
 
 function DrawerNavigator() {
+  const isAuthenticated = useSelector((s) => s.user?.isAuthenticated);
+  const isAdmin = useSelector((s) => s.user?.isAdmin);
   return (
     <Drawer.Navigator
       useLegacyImplementation={false}
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         headerShown: false,
         drawerType: Platform.OS === 'web' ? 'front' : 'slide',
@@ -101,7 +225,14 @@ function DrawerNavigator() {
     >
       <Drawer.Screen name="HomeTabs" component={MainTabs} options={{ title: t('home') }} />
       <Drawer.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
-      <Drawer.Screen name="AdminPanel" component={AdminStack} options={{ title: t('admin') }} />
+      {isAdmin ? (
+        <Drawer.Screen name="AdminPanel" component={AdminStack} options={{ title: t('admin') }} />
+      ) : null}
+      {!isAuthenticated ? (
+        <Drawer.Screen name="Login" component={LoginScreen} options={{ title: t('login') }} />
+      ) : (
+        <Drawer.Screen name="Logout" component={LogoutScreen} options={{ title: t('logout') }} />
+      )}
     </Drawer.Navigator>
   );
 }
@@ -143,6 +274,8 @@ function AppContent() {
   const dispatch = useDispatch();
   const darkMode = useSelector((s) => s.ui.darkMode);
   const locale = useSelector((s) => s.ui.locale);
+  const isAuthenticated = useSelector((s) => s.user.isAuthenticated);
+  const isGuest = useSelector((s) => s.user.isGuest);
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
@@ -161,6 +294,15 @@ function AppContent() {
         try {
           const uc = await AsyncStorage.getItem('@elearning_user_primary_color');
           if (uc) dispatch(setPrimaryColor(uc));
+        } catch {}
+        // Load auth state
+        try {
+          const raw = await AsyncStorage.getItem('@elearning_auth_state');
+          if (raw) {
+            const obj = JSON.parse(raw);
+            if (obj?.user) dispatch(loginSuccess(obj.user));
+            else if (obj?.isGuest) dispatch(continueAsGuest());
+          }
         } catch {}
       } catch (error) {
         // ignore
@@ -191,7 +333,7 @@ function AppContent() {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: darkMode ? '#111' : theme.colors.background }}>
       <NavigationContainer theme={navTheme} key={locale || 'en'}>
         <StatusBar style={darkMode ? 'light' : 'dark'} />
-        <DrawerNavigator />
+        {(isAuthenticated || isGuest) ? <DrawerNavigator /> : <AuthStack />}
       </NavigationContainer>
     </GestureHandlerRootView>
   );
