@@ -7,8 +7,8 @@ import { useSelector } from 'react-redux';
 
 export default function AdminDashboardScreen({ navigation }) {
   const colors = useColors();
-  const courses = useSelector((s) => s.courses?.list || []);
-  const users = useSelector((s) => s.user?.all || []);
+  const courses = (useSelector((s) => s.courses?.list) || []);
+  const users = (useSelector((s) => s.user?.all) || []);
 
   const stats = useMemo(() => {
     const totalCourses = courses.length || 0;
@@ -50,4 +50,5 @@ export default function AdminDashboardScreen({ navigation }) {
 const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
 });
+
 

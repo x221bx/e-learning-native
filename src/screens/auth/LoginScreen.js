@@ -43,7 +43,7 @@ export default function LoginScreen({ navigation }) {
         <View style={{ marginTop: 12, alignItems: 'center' }}>
           <Text style={{ color: theme.colors.muted }}>
             {(t('no_account') || "Don't have an account?") + ' '}
-            <Text style={{ color: theme.colors.primary, fontWeight: '700' }} onPress={() => navigation.replace('Register')}>
+            <Text style={{ color: theme.colors.primary, fontWeight: '700' }} onPress={() => navigation.navigate('Register')}>
               {t('create_account') || 'Create account'}
             </Text>
           </Text>
@@ -90,4 +90,5 @@ const styles = StyleSheet.create({
   btn: { backgroundColor: theme.colors.primary, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
   btnText: { color: '#fff', fontWeight: '700' },
 });
+
 
