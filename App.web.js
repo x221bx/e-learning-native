@@ -148,6 +148,7 @@ function DrawerNavigator() {
       <Drawer.Screen name="HomeTabs" component={MainTabs} options={{ title: t('home') }} />
       <Drawer.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
       <Drawer.Screen name="Admin" component={AdminStack} options={{ title: 'Admin' }} />
+      <Drawer.Screen name="Register" component={RegisterScreen} options={{ title: t('create_account') || 'Create Account' }} />
       {!isAuthenticated ? (
         <Drawer.Screen name="Login" component={LoginScreen} options={{ title: t('login') || 'Login' }} />
       ) : (
