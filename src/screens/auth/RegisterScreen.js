@@ -27,6 +27,7 @@ export default function RegisterScreen({ navigation }) {
   const [NativeDatePicker, setNativeDatePicker] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  // إضافة بسيطة عشان الكود يشتغل (newadd ما حطّهاش، بس UI المدرّس بيستخدمها)
   const courseOptions = ['frontend', 'ui-ux', 'backend', 'mobile', 'data-science', 'devops', 'ai-ml'];
 
   const validate = () => {
@@ -96,10 +97,12 @@ export default function RegisterScreen({ navigation }) {
     try {
       if (!NativeDatePicker) {
         const mod = await import('@react-native-community/datetimepicker');
-        setNativeDatePicker(() => mod.default || mod.DateTimePicker);
+        setNativeDatePicker(() => (mod.default || mod.DateTimePicker));
       }
       setShowDatePicker(true);
-    } catch {}
+    } catch {
+      // fallback: do nothing; keep manual
+    }
   };
 
   const formatDate = (d) => {
@@ -192,7 +195,7 @@ export default function RegisterScreen({ navigation }) {
           {errors.password ? <Text style={styles.err}>{errors.password}</Text> : null}
         </View>
 
-        {/* Confirm Password */}
+        {/* Confirm Password (مش مطلوب للمدرّس) */}
         {role !== 'teacher' && (
           <View style={styles.field}>
             <Text style={styles.label}>{t('confirm_password') || 'Confirm Password'}</Text>
@@ -213,7 +216,7 @@ export default function RegisterScreen({ navigation }) {
           </View>
         )}
 
-        {/* Birth Date */}
+        {/* Birth Date (للطلاب) */}
         {role === 'student' && (
           <View style={styles.field}>
             <Text style={styles.label}>{t('birth_date') || 'Birth Date'}</Text>
@@ -231,10 +234,12 @@ export default function RegisterScreen({ navigation }) {
               })
             ) : (
               <TouchableOpacity onPress={openBirthPicker} style={[styles.input, errors.birthDate && styles.inputError]}>
-                <Text style={{ color: birthDate ? theme.colors.text : theme.colors.textLight }}>{birthDate || (t('select_date') || 'Select date')}</Text>
+                <Text style={{ color: birthDate ? theme.colors.text : theme.colors.textLight }}>
+                  {birthDate || (t('select_date') || 'Select date')}
+                </Text>
               </TouchableOpacity>
             )}
-            {NativeDatePicker && showDatePicker && (
+            {NativeDatePicker && showDatePicker ? (
               <NativeDatePicker
                 value={birthDateObj || new Date()}
                 mode="date"
@@ -248,12 +253,12 @@ export default function RegisterScreen({ navigation }) {
                   }
                 }}
               />
-            )}
+            ) : null}
             {errors.birthDate ? <Text style={styles.err}>{errors.birthDate}</Text> : null}
           </View>
         )}
 
-        {/* Phone */}
+        {/* Phone (طالب/أدمِن) */}
         {(role === 'student' || role === 'admin') && (
           <View style={styles.field}>
             <Text style={styles.label}>{t('phone') || 'Phone'}</Text>
@@ -377,10 +382,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
     elevation: 2,
   },
   centerText: { textAlign: 'center' },

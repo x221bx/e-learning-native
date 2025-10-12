@@ -8,8 +8,9 @@ import { loginSuccess } from '../../store/userSlice';
 
 export default function LoginScreen({ navigation }) {
   const dispatch = useDispatch();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+    const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
@@ -17,20 +18,24 @@ export default function LoginScreen({ navigation }) {
   const validate = () => {
     const next = {};
     const e = (email || '').trim();
-    const p = (password || '').trim();
+    const n = (name || '').trim();
+
     if (!e) next.email = t('email_required') || 'Email is required';
     if (e && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) next.email = t('email_invalid') || 'Invalid email';
-    if (!p) next.password = t('password_required') || 'Password is required';
-    if (p && p.length < 6) next.password = t('password_min') || 'Min 6 characters';
+
+     if (!n) next.name = (t('name_optional_but_recommended') || 'Name is recommended');
+
     setErrors(next);
-    return Object.keys(next).length === 0;
+    return Object.keys(next).filter(k => next[k]).length === 0 || (Object.keys(next).length === 1 && next.name);
   };
 
   const onLogin = async () => {
     if (!validate()) return;
     setSubmitting(true);
+
     const em = (email || '').trim();
-    const name = em.split('@')[0] || 'Learner';
+    const displayName = (name || em.split('@')[0] || 'Learner').trim();
+
     let map = {};
     try {
       const rawMap = await AsyncStorage.getItem('@elearning_profiles');
@@ -42,7 +47,7 @@ export default function LoginScreen({ navigation }) {
     const user = {
       ...prev,
       id: prev.id || Date.now(),
-      name: prev.name || name,
+      name: prev.name || displayName,
       email: em,
       role: prev.role || (em.endsWith('@admin.com') ? 'admin' : 'user'),
       avatar: prev.avatar || 'https://i.pravatar.cc/150?img=3',
@@ -56,30 +61,40 @@ export default function LoginScreen({ navigation }) {
 
     try { dispatch(loginSuccess(user)); } catch {}
     try { await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ user })); } catch {}
+
     try {
       navigation.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
-    } catch {}
-    setSubmitting(false);
+    } catch {} 
+    finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.centerContainer} style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <View style={styles.formCard}>
-        <Text style={[styles.title, styles.centerText]}>
-          {t('welcome_back') || 'Welcome back!'}
-        </Text>
-        <Text style={[styles.subtitle, styles.centerText]}>
-          {t('login_to_continue') || 'Login to continue learning'}
-        </Text>
+        <Text style={[styles.title, styles.centerText]}>{t('welcome_back') || 'Welcome back!'}</Text>
+        <Text style={[styles.subtitle, styles.centerText]}>{t('login_to_continue') || 'Login to continue learning'}</Text>
 
-        <View style={styles.field}>
+         <View style={styles.field}>
+          <Text style={styles.label}>{t('name') || 'Name'}</Text>
+          <TextInput
+            placeholder={t('name_placeholder') || 'Your name'}
+            placeholderTextColor={theme.colors.textLight}
+            value={name}
+            onChangeText={(v) => { setName(v); if (errors.name) setErrors({ ...errors, name: null }); }}
+            style={[styles.input, errors.name && styles.inputError]}
+          />
+          {errors.name ? <Text style={styles.err}>{errors.name}</Text> : null}
+        </View>
+
+         <View style={styles.field}>
           <Text style={styles.label}>{t('email') || 'Email'}</Text>
           <TextInput
             placeholder={t('email_placeholder') || 'you@example.com'}
             placeholderTextColor={theme.colors.textLight}
             value={email}
             autoCapitalize="none"
-            autoComplete="email"
             keyboardType="email-address"
             onChangeText={(v) => { setEmail(v); if (errors.email) setErrors({ ...errors, email: null }); }}
             style={[styles.input, errors.email && styles.inputError]}
@@ -87,45 +102,14 @@ export default function LoginScreen({ navigation }) {
           {errors.email ? <Text style={styles.err}>{errors.email}</Text> : null}
         </View>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>{t('password') || 'Password'}</Text>
-          <TextInput
-            placeholder={t('password_placeholder') || '••••••'}
-            placeholderTextColor={theme.colors.textLight}
-            value={password}
-            onChangeText={(v) => { setPassword(v); if (errors.password) setErrors({ ...errors, password: null }); }}
-            secureTextEntry={!showPass}
-            autoCapitalize="none"
-            textContentType="password"
-            style={[styles.input, errors.password && styles.inputError]}
-          />
-          {errors.password ? <Text style={styles.err}>{errors.password}</Text> : null}
-          <Text
-            onPress={() => setShowPass(!showPass)}
-            style={{ color: theme.colors.primary, marginTop: 6, alignSelf: 'flex-end', fontWeight: '700' }}
-          >
-            {showPass ? (t('hide_password') || 'Hide password') : (t('show_password') || 'Show password')}
-          </Text>
-        </View>
-
-        <TouchableOpacity
-          onPress={onLogin}
-          style={[styles.btn, submitting && { opacity: 0.7 }]}
-          activeOpacity={0.85}
-          disabled={submitting}
-        >
-          <Text style={styles.btnText}>
-            {submitting ? (t('loading') || 'Loading...') : (t('login') || 'Login')}
-          </Text>
+         <TouchableOpacity onPress={onLogin} style={[styles.btn, submitting && { opacity: 0.7 }]} activeOpacity={0.85} disabled={submitting}>
+          <Text style={styles.btnText}>{submitting ? (t('loading') || 'Loading...') : (t('login') || 'Login')}</Text>
         </TouchableOpacity>
 
         <View style={{ marginTop: 12, alignItems: 'center' }}>
           <Text style={{ color: theme.colors.muted }}>
             {(t('no_account') || "Don't have an account?") + ' '}
-            <Text
-              style={{ color: theme.colors.primary, fontWeight: '700' }}
-              onPress={() => navigation.navigate('Register')}
-            >
+            <Text style={{ color: theme.colors.primary, fontWeight: '700' }} onPress={() => navigation.navigate('Register')}>
               {t('create_account') || 'Create account'}
             </Text>
           </Text>
@@ -150,10 +134,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
     elevation: 2,
   },
   centerText: { textAlign: 'center' },
