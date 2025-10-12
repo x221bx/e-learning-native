@@ -23,6 +23,10 @@ export default function RegisterScreen({ navigation }) {
   const [errors, setErrors] = useState({});
   const courseOptions = ['frontend','ui-ux','backend','mobile','data-science','devops','ai-ml'];
   const fileInputRef = useRef(null);
+  const dateInputRef = useRef(null);
+  const [birthDateObj, setBirthDateObj] = useState(null);
+  const [NativeDatePicker, setNativeDatePicker] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const validate = () => {
     const next = {};
@@ -83,6 +87,31 @@ export default function RegisterScreen({ navigation }) {
     }
   };
 
+  const openBirthPicker = async () => {
+    if (Platform.OS === 'web') {
+      try { dateInputRef.current && dateInputRef.current.click(); } catch {}
+      return;
+    }
+    try {
+      if (!NativeDatePicker) {
+        const mod = await import('@react-native-community/datetimepicker');
+        setNativeDatePicker(() => mod.default || mod.DateTimePicker);
+      }
+      setShowDatePicker(true);
+    } catch {
+      // fallback: do nothing; keep manual
+    }
+  };
+
+  const formatDate = (d) => {
+    try {
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    } catch { return ''; }
+  };
+
   const onRegister = async () => {
     if (!validate()) return;
     const profile = {
@@ -113,9 +142,10 @@ export default function RegisterScreen({ navigation }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <Text style={styles.title}>{t('create_account') || 'Create account'}</Text>
-            <View style={styles.field}> 
+    <ScrollView contentContainerStyle={styles.centerContainer} style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <View style={styles.formCard}>
+        <Text style={[styles.title, styles.centerText]}>{t('create_account') || 'Create account'}</Text>
+        <View style={styles.field}> 
         <Text style={styles.label}>{t('name') || 'Name'}</Text>
         <TextInput
           placeholder={t('name_placeholder') || 'Your name'}
@@ -181,13 +211,38 @@ export default function RegisterScreen({ navigation }) {
         <>
           <View style={styles.field}>
             <Text style={styles.label}>{t('birth_date') || 'Birth Date'}</Text>
-            <TextInput
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={theme.colors.textLight}
-              value={birthDate}
-              onChangeText={(v) => { setBirthDate(v); if (errors.birthDate) setErrors({ ...errors, birthDate: null }); }}
-              style={[styles.input, errors.birthDate && styles.inputError]}
-            />
+            {Platform.OS === 'web' ? (
+              React.createElement('input', {
+                type: 'date',
+                ref: (el) => (dateInputRef.current = el),
+                value: birthDate || '',
+                onChange: (e) => {
+                  const v = e.target?.value || '';
+                  setBirthDate(v);
+                  if (errors.birthDate) setErrors({ ...errors, birthDate: null });
+                },
+                style: { padding: 12, border: `1px solid ${theme.colors.border}`, borderRadius: 10, background: theme.colors.card, color: theme.colors.text, width: '100%' },
+              })
+            ) : (
+              <TouchableOpacity onPress={openBirthPicker} style={[styles.input, errors.birthDate && styles.inputError]}>
+                <Text style={{ color: birthDate ? theme.colors.text : theme.colors.textLight }}>{birthDate || (t('select_date') || 'Select date')}</Text>
+              </TouchableOpacity>
+            )}
+            {NativeDatePicker && showDatePicker ? (
+              <NativeDatePicker
+                value={birthDateObj || new Date()}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) {
+                    setBirthDate(formatDate(selectedDate));
+                    setBirthDateObj(selectedDate);
+                    if (errors.birthDate) setErrors({ ...errors, birthDate: null });
+                  }
+                }}
+              />
+            ) : null}
             {errors.birthDate ? <Text style={styles.err}>{errors.birthDate}</Text> : null}
           </View>
           <View style={styles.field}>
@@ -290,21 +345,35 @@ export default function RegisterScreen({ navigation }) {
       </View>
 
       <TouchableOpacity onPress={onRegister} style={styles.btn} activeOpacity={0.85}>
-        <Text style={styles.btnText}>{t('create_account') || 'Create Account'}</Text>
-      </TouchableOpacity>
-      <View style={{ marginTop: 12, alignItems: 'center' }}>
-        <Text style={{ color: theme.colors.muted }}>
-          {(t('have_account') || 'Already have an account?') + ' '}
-          <Text style={{ color: theme.colors.primary, fontWeight: '700' }} onPress={() => navigation.navigate('Login')}>
-            {t('login') || 'Login'}
+          <Text style={styles.btnText}>{t('create_account') || 'Create Account'}</Text>
+        </TouchableOpacity>
+        <View style={{ marginTop: 12, alignItems: 'center' }}>
+          <Text style={{ color: theme.colors.muted }}>
+            {(t('have_account') || 'Already have an account?') + ' '}
+            <Text style={{ color: theme.colors.primary, fontWeight: '700' }} onPress={() => navigation.navigate('Login')}>
+              {t('login') || 'Login'}
+            </Text>
           </Text>
-        </Text>
+        </View>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  centerContainer: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16 },
+  formCard: {
+    width: '100%',
+    maxWidth: 480,
+    backgroundColor: theme.colors.card,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
+  centerText: { textAlign: 'center' },
   title: { fontSize: 22, fontWeight: '800', color: theme.colors.text, marginBottom: 6 },
   subtitle: { color: theme.colors.muted, marginBottom: 16 },
   field: { marginBottom: 12 },
