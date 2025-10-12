@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, TextInput, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import theme from '../theme';
 import { useColors } from '../theme/hooks';
@@ -7,7 +7,7 @@ import { t } from '../i18n';
 import { courses } from '../mock/data';
 import { CourseCardVertical } from '../components/CourseCard';
 import { useSelector, useDispatch } from 'react-redux';
-import { setAdmin, logout } from '../store/userSlice';
+import { setAdmin, logout, updateProfile } from '../store/userSlice';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setPrimaryColor, setDarkMode, setLocaleUI } from '../store/uiSlice';
@@ -40,8 +40,26 @@ export default function ProfileScreen({ navigation }) {
     })();
   }, [dispatch]);
 
+  // Initialize editable fields from user
+  useEffect(() => {
+    try {
+      setFormName(user?.name || '');
+      setFormPhone(user?.profile?.phone || '');
+      setFormBirthDate(user?.profile?.birthDate || '');
+      setFormTeacherCourse(user?.profile?.teacherCourse || '');
+      setAvatarUri(user?.avatar || '');
+    } catch {}
+  }, [user]);
+
   // Local color input for manual change
   const [colorInput, setColorInput] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [formName, setFormName] = useState('');
+  const [formPhone, setFormPhone] = useState('');
+  const [formBirthDate, setFormBirthDate] = useState('');
+  const [formTeacherCourse, setFormTeacherCourse] = useState('');
+  const [avatarUri, setAvatarUri] = useState('');
+  const fileInputRef = useRef(null);
   const applyColor = async () => {
     const c = (colorInput || '').trim();
     if (!c) return;
@@ -56,8 +74,64 @@ export default function ProfileScreen({ navigation }) {
     dispatch(setLocaleUI(next));
   };
 
+  const pickAvatar = async () => {
+    if (Platform.OS === 'web') {
+      try { fileInputRef.current && fileInputRef.current.click(); } catch {}
+      return;
+    }
+    try {
+      const ImagePicker = await import('expo-image-picker');
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') return;
+      const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1,1], quality: 0.8 });
+      if (!res.canceled && res.assets && res.assets.length > 0) {
+        setAvatarUri(res.assets[0].uri);
+      }
+    } catch {}
+  };
+
+  const saveProfile = async () => {
+    const updates = {
+      name: (formName || '').trim(),
+      avatar: avatarUri || user?.avatar,
+      profile: {
+        ...(user?.profile || {}),
+        phone: (formPhone || '').trim() || null,
+        birthDate: (formBirthDate || '').trim() || null,
+        teacherCourse: user?.role === 'teacher' ? (formTeacherCourse || null) : (user?.profile?.teacherCourse || null),
+      },
+    };
+    try { dispatch(updateProfile(updates)); } catch {}
+    try {
+      // Persist auth state
+      const auth = { user: { ...(user || {}), ...updates, profile: { ...(user?.profile || {}), ...(updates.profile || {}) } } };
+      await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify(auth));
+      // Persist profiles map by email
+      const key = String(auth.user.email || '').toLowerCase();
+      const raw = await AsyncStorage.getItem('@elearning_profiles');
+      const map = raw ? JSON.parse(raw) : {};
+      map[key] = auth.user;
+      await AsyncStorage.setItem('@elearning_profiles', JSON.stringify(map));
+    } catch {}
+    setEditMode(false);
+  };
+
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={{ marginBottom: 8 }}>
+        <TouchableOpacity
+          onPress={() => {
+            try {
+              if (navigation?.canGoBack && navigation.canGoBack()) navigation.goBack();
+              else navigation.navigate('Home');
+            } catch {}
+          }}
+          activeOpacity={0.8}
+          style={{ padding: 6, width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Ionicons name="arrow-back" size={22} color={colors.text} />
+        </TouchableOpacity>
+      </View>
       <View style={[styles.header] }>
         <Image 
           source={{ uri: user?.avatar || 'https://i.pravatar.cc/150?img=5' }} 
@@ -80,6 +154,110 @@ export default function ProfileScreen({ navigation }) {
             <Text style={styles.statLabel}>{t('completed') || 'Completed'}</Text>
           </View>
         </View>
+      </View>
+
+      {/* Profile Details */}
+      <View style={{ padding: 12, borderWidth: 1, borderColor: colors.border, borderRadius: 12, backgroundColor: colors.card }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={[styles.sectionTitle, { marginVertical: 0, color: colors.text }]}>{t('profile') || 'Profile'}</Text>
+          <TouchableOpacity onPress={() => setEditMode((v) => !v)}>
+            <Text style={{ color: colors.primary, fontWeight: '700' }}>{editMode ? (t('cancel') || 'Cancel') : (t('edit') || 'Edit')}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Avatar */}
+        <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <Image source={{ uri: avatarUri || user?.avatar }} style={{ width: 64, height: 64, borderRadius: 32 }} />
+          {Platform.OS === 'web' ? (
+            React.createElement('input', {
+              type: 'file', accept: 'image/*',
+              ref: (el) => (fileInputRef.current = el),
+              onChange: (e) => { try { const f = e.target?.files?.[0]; if (f) { const reader = new FileReader(); reader.onload = () => { const dataUrl = reader.result; if (typeof dataUrl === 'string') setAvatarUri(dataUrl); }; reader.readAsDataURL(f); } } catch {} },
+              style: { display: 'none' },
+            })
+          ) : null}
+          {editMode ? (
+            <TouchableOpacity onPress={pickAvatar} style={{ paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: colors.primary }}>
+              <Text style={{ color: '#fff', fontWeight: '700' }}>{t('change_photo') || 'Change Photo'}</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+
+        {/* Name */}
+        <View style={{ marginTop: 12 }}>
+          <Text style={{ color: colors.muted, marginBottom: 6 }}>{t('name') || 'Name'}</Text>
+          {editMode ? (
+            <TextInput value={formName} onChangeText={setFormName} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, color: colors.text, backgroundColor: colors.card }} />
+          ) : (
+            <Text style={{ color: colors.text }}>{user?.name || '-'}</Text>
+          )}
+        </View>
+
+        {/* Email (read-only) */}
+        <View style={{ marginTop: 12 }}>
+          <Text style={{ color: colors.muted, marginBottom: 6 }}>{t('email') || 'Email'}</Text>
+          <Text style={{ color: colors.text }}>{user?.email || '-'}</Text>
+        </View>
+
+        {/* Phone */}
+        <View style={{ marginTop: 12 }}>
+          <Text style={{ color: colors.muted, marginBottom: 6 }}>{t('phone') || 'Phone'}</Text>
+          {editMode ? (
+            <TextInput value={formPhone} onChangeText={setFormPhone} keyboardType="phone-pad" style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, color: colors.text, backgroundColor: colors.card }} />
+          ) : (
+            <Text style={{ color: colors.text }}>{user?.profile?.phone || '-'}</Text>
+          )}
+        </View>
+
+        {/* Birth Date */}
+        <View style={{ marginTop: 12 }}>
+          <Text style={{ color: colors.muted, marginBottom: 6 }}>{t('birth_date') || 'Birth Date'}</Text>
+          {editMode ? (
+            Platform.OS === 'web' ? (
+              React.createElement('input', {
+                type: 'date', value: formBirthDate || '',
+                onChange: (e) => setFormBirthDate(e.target?.value || ''),
+                style: { padding: 8, border: `1px solid ${colors.border}`, borderRadius: 8, background: colors.card, color: colors.text },
+              })
+            ) : (
+              <TouchableOpacity onPress={() => { /* Could implement native picker if available */ }} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 12, backgroundColor: colors.card }}>
+                <Text style={{ color: colors.text }}>{formBirthDate || (t('select_date') || 'Select date')}</Text>
+              </TouchableOpacity>
+            )
+          ) : (
+            <Text style={{ color: colors.text }}>{user?.profile?.birthDate || '-'}</Text>
+          )}
+        </View>
+
+        {/* Teacher course */}
+        {user?.role === 'teacher' ? (
+          <View style={{ marginTop: 12 }}>
+            <Text style={{ color: colors.muted, marginBottom: 6 }}>{t('select_course') || 'Select Course'}</Text>
+            {editMode ? (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                {['frontend','ui-ux','backend','mobile','data-science','devops','ai-ml'].map((opt) => (
+                  <TouchableOpacity key={opt} onPress={() => setFormTeacherCourse(opt)} style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, borderWidth: 1, borderColor: formTeacherCourse === opt ? colors.primary : colors.border, backgroundColor: formTeacherCourse === opt ? colors.primary : colors.card }}>
+                    <Text style={{ color: formTeacherCourse === opt ? '#fff' : colors.muted, fontWeight: '700' }}>{opt}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : (
+              <Text style={{ color: colors.text }}>{user?.profile?.teacherCourse || '-'}</Text>
+            )}
+          </View>
+        ) : null}
+
+        {/* Save button */}
+        {editMode ? (
+          <View style={{ marginTop: 12, flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity onPress={saveProfile} style={{ backgroundColor: colors.primary, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 8 }}>
+              <Text style={{ color: '#fff', fontWeight: '700' }}>{t('save') || 'Save'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setEditMode(false)} style={{ borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 8, backgroundColor: colors.card }}>
+              <Text style={{ color: colors.text }}>{t('cancel') || 'Cancel'}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </View>
 
       {/* Auth actions */}

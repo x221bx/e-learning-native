@@ -1,0 +1,9 @@
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -146,6 +146,7 @@ function MainTabs() {
 
 function DrawerNavigator() {
   const isAuthenticated = useSelector((s) => s.user?.isAuthenticated);
+  const isAdmin = useSelector((s) => s.user?.isAdmin);
   return (
     <Drawer.Navigator
       initialRouteName={isAuthenticated ? 'HomeTabs' : 'Welcome'}
@@ -162,7 +163,9 @@ function DrawerNavigator() {
       ) : null}
       <Drawer.Screen name="HomeTabs" component={MainTabs} options={{ title: t('home') }} />
       <Drawer.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
-      <Drawer.Screen name="Admin" component={AdminStack} options={{ title: 'Admin' }} />
+      {isAdmin ? (
+        <Drawer.Screen name="Admin" component={AdminStack} options={{ title: 'Admin' }} />
+      ) : null}
       {!isAuthenticated ? (
         <>
           <Drawer.Screen name="Login" component={LoginScreen} options={{ title: t('login') || 'Login' }} />
