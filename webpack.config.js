@@ -25,9 +25,8 @@ module.exports = async function (env, argv) {
 
     // Ensure Expo Router knows where the app directory lives when bundling for web
     const appDirectory = path.resolve(__dirname, 'app');
-    if (!process.env.EXPO_ROUTER_APP_ROOT) {
-      process.env.EXPO_ROUTER_APP_ROOT = appDirectory;
-    }
+ 
+  main
     config.plugins.push(
       new webpack.DefinePlugin({
         'process.env.EXPO_ROUTER_APP_ROOT': JSON.stringify(appDirectory),
