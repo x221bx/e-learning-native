@@ -108,7 +108,15 @@ export default function AdminLayout({ title, subtitle, actions, children, scroll
   );
 
   if (scrollable) {
-    return <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: theme.spacing.xxl }}>{Content}</ScrollView>;
+    return (
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: theme.spacing.xxl, flexGrow: 1 }}
+        showsVerticalScrollIndicator
+      >
+        {Content}
+      </ScrollView>
+    );
   }
   return Content;
 }
