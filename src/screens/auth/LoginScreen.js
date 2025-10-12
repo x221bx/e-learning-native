@@ -10,59 +10,64 @@ export default function LoginScreen({ navigation }) {
   const dispatch = useDispatch();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
   const validate = () => {
     const next = {};
-    if (!name.trim()) next.name = t('name_required') || 'Name is required';
-    if (!email.trim()) next.email = t('email_required') || 'Email is required';
+    const e = (email || '').trim();
+    const n = (name || '').trim();
+
+    if (!e) next.email = t('email_required') || 'Email is required';
+    if (e && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) next.email = t('email_invalid') || 'Invalid email';
+
+     if (!n) next.name = (t('name_optional_but_recommended') || 'Name is recommended');
+
     setErrors(next);
-    return Object.keys(next).length === 0;
+    return Object.keys(next).filter(k => next[k]).length === 0 || (Object.keys(next).length === 1 && next.name);
   };
 
   const onLogin = async () => {
     if (!validate()) return;
-    const nm = (name || '').trim();
+    setSubmitting(true);
+
     const em = (email || '').trim();
+    const displayName = (name || em.split('@')[0] || 'Learner').trim();
+
     let map = {};
     try {
       const rawMap = await AsyncStorage.getItem('@elearning_profiles');
       map = rawMap ? JSON.parse(rawMap) : {};
-    } catch { }
-    const key = em.toLowerCase();
+    } catch {}
 
-    let user = null;
-    if (map[key]) {
-      const prev = map[key];
-      user = {
-        ...prev,
-        id: prev.id || Date.now(),
-        name: nm || prev.name || 'Learner',
-        email: em,
-        role: prev.role || (em.endsWith('@admin.com') ? 'admin' : 'user'),
-        avatar: prev.avatar || 'https://i.pravatar.cc/150?img=3',
-        profile: prev.profile || {},
-      };
-    } else {
-      user = {
-        id: Date.now(),
-        name: nm || 'Learner',
-        email: em,
-        role: em.endsWith('@admin.com') ? 'admin' : 'user',
-        avatar: 'https://i.pravatar.cc/150?img=3',
-        profile: {},
-      };
-    }
+    const key = em.toLowerCase();
+    const prev = map[key] || {};
+    const user = {
+      ...prev,
+      id: prev.id || Date.now(),
+      name: prev.name || displayName,
+      email: em,
+      role: prev.role || (em.endsWith('@admin.com') ? 'admin' : 'user'),
+      avatar: prev.avatar || 'https://i.pravatar.cc/150?img=3',
+      profile: prev.profile || {},
+    };
+
     try {
       map[key] = user;
       await AsyncStorage.setItem('@elearning_profiles', JSON.stringify(map));
-    } catch { }
+    } catch {}
 
-    try { dispatch(loginSuccess(user)); } catch { }
-    try { await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ user })); } catch { }
+    try { dispatch(loginSuccess(user)); } catch {}
+    try { await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ user })); } catch {}
+
     try {
       navigation.reset({ index: 0, routes: [{ name: 'HomeTabs' }] });
-    } catch { }
+    } catch {} 
+    finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -70,7 +75,8 @@ export default function LoginScreen({ navigation }) {
       <View style={styles.formCard}>
         <Text style={[styles.title, styles.centerText]}>{t('welcome_back') || 'Welcome back!'}</Text>
         <Text style={[styles.subtitle, styles.centerText]}>{t('login_to_continue') || 'Login to continue learning'}</Text>
-        <View style={styles.field}>
+
+         <View style={styles.field}>
           <Text style={styles.label}>{t('name') || 'Name'}</Text>
           <TextInput
             placeholder={t('name_placeholder') || 'Your name'}
@@ -81,7 +87,8 @@ export default function LoginScreen({ navigation }) {
           />
           {errors.name ? <Text style={styles.err}>{errors.name}</Text> : null}
         </View>
-        <View style={styles.field}>
+
+         <View style={styles.field}>
           <Text style={styles.label}>{t('email') || 'Email'}</Text>
           <TextInput
             placeholder={t('email_placeholder') || 'you@example.com'}
@@ -94,9 +101,11 @@ export default function LoginScreen({ navigation }) {
           />
           {errors.email ? <Text style={styles.err}>{errors.email}</Text> : null}
         </View>
-        <TouchableOpacity onPress={onLogin} style={styles.btn} activeOpacity={0.85}>
-          <Text style={styles.btnText}>{t('login') || 'Login'}</Text>
+
+         <TouchableOpacity onPress={onLogin} style={[styles.btn, submitting && { opacity: 0.7 }]} activeOpacity={0.85} disabled={submitting}>
+          <Text style={styles.btnText}>{submitting ? (t('loading') || 'Loading...') : (t('login') || 'Login')}</Text>
         </TouchableOpacity>
+
         <View style={{ marginTop: 12, alignItems: 'center' }}>
           <Text style={{ color: theme.colors.muted }}>
             {(t('no_account') || "Don't have an account?") + ' '}
@@ -115,7 +124,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16
+    padding: 16,
   },
   formCard: {
     width: '100%',
@@ -133,11 +142,22 @@ const styles = StyleSheet.create({
   subtitle: { color: theme.colors.muted, marginBottom: 16 },
   field: { marginBottom: 12 },
   label: { color: theme.colors.muted, marginBottom: 6, fontWeight: '600' },
-  input: { borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, paddingVertical: 12, borderRadius: 10, backgroundColor: theme.colors.card, color: theme.colors.text },
+  input: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: theme.colors.card,
+    color: theme.colors.text,
+  },
   inputError: { borderColor: theme.colors.danger },
   err: { color: theme.colors.danger, fontSize: 12, marginTop: 6 },
-  btn: { backgroundColor: theme.colors.primary, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
+  btn: {
+    backgroundColor: theme.colors.primary,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
   btnText: { color: '#fff', fontWeight: '700' },
 });
-
-
