@@ -94,4 +94,12 @@
   ,"time": "Time"
   ,"no_events": "No events scheduled"
   ,"dashboard": "Dashboard"
+  ,"email_invalid": "Invalid email"
+  ,"password_required": "Password is required"
+  ,"show_password": "Show password"
+  ,"hide_password": "Hide password"
+  ,"loading": "Loading..."
+  ,"password": "Password"
+  ,"password_placeholder": "••••••"
+  ,"email_placeholder": "you@example.com"
 }
