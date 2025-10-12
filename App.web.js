@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import QuickPrefsHeaderRight from './src/components/QuickPrefs';
 import WelcomeHeaderRight from './src/components/WelcomeHeaderRight';
+import AppHeader from './src/components/AppHeader';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
 import * as SplashScreen from 'expo-splash-screen';
@@ -40,6 +41,11 @@ import LoginScreen from './src/screens/auth/LoginScreen';
 import RegisterScreen from './src/screens/auth/RegisterScreen';
 import LogoutScreen from './src/screens/auth/LogoutScreen';
 import AdminDashboardScreen from './src/screens/admin/AdminDashboardScreen';
+import AdminLiveScreen from './src/screens/admin/AdminLiveScreen';
+import AdminScheduleScreen from './src/screens/admin/AdminScheduleScreen';
+import LiveNowScreen from './src/screens/LiveNowScreen';
+import ScheduleScreen from './src/screens/ScheduleScreen';
+import TeachersScreen from './src/screens/TeachersScreen';
 
 import theme from './src/theme';
 import { t } from './src/i18n';
@@ -53,24 +59,11 @@ const Drawer = createDrawerNavigator();
 
 function HomeStack() {
   return (
-    <Stack.Navigator
-      screenOptions={({ navigation }) => ({
-        headerShown: true,
-        headerStyle: { backgroundColor: theme.colors.primary },
-        headerTintColor: '#fff',
-        headerTitleStyle: { color: '#fff', fontWeight: '700' },
-        headerRight: () => <QuickPrefsHeaderRight />,
-        headerLeft: () => (
-          <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
-            <Ionicons name="menu" size={22} color={'#fff'} />
-          </TouchableOpacity>
-        ),
-      })}
-    >
-      <Stack.Screen name="HomeMain" component={HomeScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="TeacherProfile" component={TeacherProfileScreen} options={{ headerShown: false }} />
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
+      <Stack.Screen name="HomeMain" component={HomeScreen} options={{ title: t('home') }} />
+      <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ title: t('course') }} />
+      <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ title: t('course') }} />
+      <Stack.Screen name="TeacherProfile" component={TeacherProfileScreen} options={{ title: t('teacher_profile') }} />
       <Stack.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
     </Stack.Navigator>
   );
@@ -78,64 +71,68 @@ function HomeStack() {
 
 function SearchStack() {
   return (
-    <Stack.Navigator
-      screenOptions={({ navigation }) => ({
-        headerShown: true,
-        headerShown: true, headerStyle: { backgroundColor: theme.colors.primary }, headerTintColor: '#fff', headerTitleStyle: { color: '#fff', fontWeight: '700' }, headerRight: () => <QuickPrefsHeaderRight />,
-        headerLeft: () => (
-          <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
-            <Ionicons name="menu" size={22} color={'#fff'} />
-          </TouchableOpacity>
-        ),
-      })}
-    >
-      <Stack.Screen name="SearchMain" component={SearchScreen} />
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
+      <Stack.Screen name="SearchMain" component={SearchScreen} options={{ title: t('search') }} />
       <Stack.Screen name="SearchResults" component={SearchResultsScreen} options={{ title: t('search') }} />
-      <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} options={{ title: t('course') }} />
+      <Stack.Screen name="CoursePlay" component={CoursePlayScreen} options={{ title: t('course') }} />
     </Stack.Navigator>
   );
 }
 
 function AuthStack() {
   return (
-    <Stack.Navigator
-      screenOptions={({ navigation }) => ({
-        headerShown: true,
-        headerShown: true, headerStyle: { backgroundColor: theme.colors.primary }, headerTintColor: '#fff', headerTitleStyle: { color: '#fff', fontWeight: '700' }, headerRight: () => <QuickPrefsHeaderRight />,
-        headerLeft: () => (
-          <TouchableOpacity onPress={() => openDrawer(navigation)} style={{ marginLeft: 12 }}>
-            <Ionicons name="menu" size={22} color={'#fff'} />
-          </TouchableOpacity>
-        ),
-      })}
-    >
-      <Stack.Screen
-        name="Welcome"
-        component={WelcomeScreen}
-        options={({ navigation }) => ({
-          title: 'Welcome',
-          headerRight: () => <WelcomeHeaderRight navigation={navigation} />,
-          headerLeft: () => null,
-        })}
-      />
-      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
+      <Stack.Screen name="Welcome" component={WelcomeScreen} options={({ navigation }) => ({ title: 'Welcome', headerRight: () => <WelcomeHeaderRight navigation={navigation} />, headerLeft: () => null })} />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ title: t('login') || 'Login' }} />
+      <Stack.Screen name="Register" component={RegisterScreen} options={{ title: t('create_account') || 'Create Account' }} />
     </Stack.Navigator>
   );
 }
 
 function AdminStack() {
   return (
-    <Stack.Navigator
-      screenOptions={({ navigation }) => ({ headerShown: false })}
-    >
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
       <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ title: 'Admin' }} />
       <Stack.Screen name="AdminCourses" component={AdminCoursesScreen} options={{ title: t('admin') }} />
       <Stack.Screen name="AdminCourseForm" component={CourseFormScreen} options={{ title: t('course') }} />
       <Stack.Screen name="AdminUsers" component={AdminUsersScreen} options={{ title: 'Admin Users' }} />
       <Stack.Screen name="AdminCategories" component={AdminCategoriesScreen} options={{ title: 'Categories' }} />
       <Stack.Screen name="AdminSettings" component={AdminSettingsScreen} options={{ title: 'Settings' }} />
+      <Stack.Screen name="AdminLive" component={AdminLiveScreen} options={{ title: t('live_now') || 'Live Now' }} />
+      <Stack.Screen name="AdminSchedule" component={AdminScheduleScreen} options={{ title: t('schedule') || 'Schedule' }} />
+    </Stack.Navigator>
+  );
+}
+
+function MessagesStack() {
+  return (
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
+      <Stack.Screen name="MessagesMain" component={MessagesScreen} options={{ title: t('messages') }} />
+    </Stack.Navigator>
+  );
+}
+
+function LiveStack() {
+  return (
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
+      <Stack.Screen name="LiveNowMain" component={LiveNowScreen} options={{ title: t('live_now') || 'Live Now' }} />
+    </Stack.Navigator>
+  );
+}
+
+function ScheduleStack() {
+  return (
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
+      <Stack.Screen name="ScheduleMain" component={ScheduleScreen} options={{ title: t('schedule') || 'Schedule' }} />
+    </Stack.Navigator>
+  );
+}
+
+function TeachersStack() {
+  return (
+    <Stack.Navigator screenOptions={{ header: (props) => <AppHeader {...props} /> }}>
+      <Stack.Screen name="TeachersMain" component={TeachersScreen} options={{ title: 'Teachers' }} />
     </Stack.Navigator>
   );
 }
@@ -171,6 +168,7 @@ function MainTabs() {
 
 function DrawerNavigator() {
   const isAuthenticated = useSelector((s) => s.user?.isAuthenticated);
+  const isAdmin = useSelector((s) => s.user?.isAdmin);
   return (
     <Drawer.Navigator
       initialRouteName={isAuthenticated ? 'HomeTabs' : 'WelcomeStack'}
@@ -185,12 +183,25 @@ function DrawerNavigator() {
       {!isAuthenticated ? (
         <Drawer.Screen name="WelcomeStack" component={AuthStack} options={{ title: 'Welcome' }} />
       ) : null}
+
       <Drawer.Screen name="HomeTabs" component={MainTabs} options={{ title: t('home') }} />
-      <Drawer.Screen name="Messages" component={MessagesScreen} options={{ title: t('messages') }} />
-      <Drawer.Screen name="Admin" component={AdminStack} options={{ title: 'Admin' }} />
-      {isAuthenticated ? (
-        <Drawer.Screen name="Logout" component={LogoutScreen} options={{ title: t('logout') || 'Logout' }} />
+      <Drawer.Screen name="Messages" component={MessagesStack} options={{ title: t('messages') }} />
+      <Drawer.Screen name="LiveNow" component={LiveStack} options={{ title: t('live_now') || 'Live Now' }} />
+      <Drawer.Screen name="Schedule" component={ScheduleStack} options={{ title: t('schedule') || 'Schedule' }} />
+      <Drawer.Screen name="Teachers" component={TeachersStack} options={{ title: 'Teachers' }} />
+
+      {isAdmin ? (
+        <Drawer.Screen name="Admin" component={AdminStack} options={{ title: 'Admin' }} />
       ) : null}
+
+      {!isAuthenticated ? (
+        <>
+          <Drawer.Screen name="Login" component={LoginScreen} options={{ title: t('login') || 'Login' }} />
+          <Drawer.Screen name="Register" component={RegisterScreen} options={{ title: t('create_account') || 'Create Account' }} />
+        </>
+      ) : (
+        <Drawer.Screen name="Logout" component={LogoutScreen} options={{ title: t('logout') || 'Logout' }} />
+      )}
     </Drawer.Navigator>
   );
 }

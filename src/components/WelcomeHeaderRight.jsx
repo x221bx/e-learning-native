@@ -18,7 +18,7 @@ export default function WelcomeHeaderRight({ navigation }) {
 
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-      <QuickPrefsHeaderRight />
+      <QuickPrefsHeaderRight tint="light" />
       <TouchableOpacity onPress={onGuest} activeOpacity={0.8} style={{ marginLeft: 12, flexDirection: 'row', alignItems: 'center' }}>
         <Ionicons name="play-skip-forward" size={20} color={'#fff'} />
         <Text style={{ color: '#fff', fontWeight: '700', marginLeft: 6 }}>
@@ -28,4 +28,3 @@ export default function WelcomeHeaderRight({ navigation }) {
     </View>
   );
 }
-
