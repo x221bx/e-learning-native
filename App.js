@@ -13,7 +13,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { enableScreens } from 'react-native-screens';
 import * as SplashScreen from 'expo-splash-screen';
 import { useDispatch, useSelector } from 'react-redux';
-
+import { addToCart,removeFromCart } from './src/store/cart';
 if (Platform.OS !== 'web') {
   enableScreens(true);
 }
@@ -30,6 +30,7 @@ import CourseDetailsScreen from './src/screens/CourseDetailsScreen';
 import CoursePlayScreen from './src/screens/CoursePlayScreen';
 import TeacherProfileScreen from './src/screens/TeacherProfileScreen';
 import MessagesScreen from './src/screens/MessagesScreen';
+import CartScreen from './src/screens/CartScreen';
 import AdminCoursesScreen from './src/screens/admin/AdminCoursesScreen';
 import CourseFormScreen from './src/screens/admin/CourseFormScreen';
 import AdminUsersScreen from './src/screens/admin/AdminUsersScreen';
@@ -40,16 +41,17 @@ import WelcomeScreen from './src/screens/auth/WelcomeScreen';
 import LoginScreen from './src/screens/auth/LoginScreen';
 import RegisterScreen from './src/screens/auth/RegisterScreen';
 import LogoutScreen from './src/screens/auth/LogoutScreen';
-
+import { addToCart,removeFromCart } from './src/store/cart';
 // Auth
 import { loginSuccess, continueAsGuest, logout } from './src/store/userSlice';
 
 import theme from './src/theme';
 import { t } from './src/i18n';
-import { withStore } from './src/store';
+import { addToCart, withStore } from './src/store/cart';
 // Auth removed: no user loading
 import { setDarkMode, setLocaleUI, setPrimaryColor } from './src/store/uiSlice';
 import { openDrawer } from './src/utils/nav';
+import { course } from './src/mock/data';
 
 const Tab = createBottomTabNavigator();
 const Stack = Platform.OS === 'web' ? createStackNavigator() : createNativeStackNavigator();
@@ -246,6 +248,50 @@ function DrawerNavigator() {
   );
 }
 
+function CartTabIcon({ color, size, focused }) {
+  const cartItems = useSelector((state) => state.cart.items );
+  const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+  const dispatch = useDispatch();
+  const handleAddToCart = () => {
+      dispatch(addToCart(course));
+    }
+  
+    const handleRemoveFromCart = () => {
+      dispatch(removeFromCart(course.id));
+    }
+  
+  return (
+    <View style={{ position: 'relative' }}>
+      <Ionicons 
+        name={focused ? 'bag' : 'bag-outline'} 
+        color={color} 
+        size={size} 
+      />
+      {itemCount > 0 && (
+        <View style={{
+          position: 'absolute',
+          right: -6,
+          top: -3,
+          backgroundColor: theme.colors.primary,
+          borderRadius: 10,
+          width: 20,
+          height: 20,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <Text style={{
+            color: 'white',
+            fontSize: 12,
+            fontWeight: 'bold',
+          }}>
+            {itemCount > 99 ? '99+' : itemCount}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
 function MainTabs() {
   const isAdmin = useSelector((s) => s.user?.isAdmin);
   return (
@@ -256,9 +302,14 @@ function MainTabs() {
         tabBarInactiveTintColor: theme.colors.muted,
         tabBarStyle: { height: 58, paddingBottom: 6 },
         tabBarIcon: ({ color, size, focused }) => {
+          if (route.name === 'Cart') {
+            return <CartTabIcon color={color} size={size} focused={focused} />;
+          }
+          
           const map = {
             Home: focused ? 'home' : 'home-outline',
             Search: focused ? 'search' : 'search-outline',
+            Cart: focused ? 'bag' : 'bag-outline',
             MyCourses: focused ? 'book' : 'book-outline',
             Profile: focused ? 'person' : 'person-outline',
             Admin: focused ? 'settings' : 'settings-outline',
@@ -270,6 +321,7 @@ function MainTabs() {
     >
       <Tab.Screen name="Home" component={HomeStack} options={{ tabBarLabel: t('home') }} />
       <Tab.Screen name="Search" component={SearchStack} options={{ tabBarLabel: t('search') }} />
+      <Tab.Screen name="Cart" component={CartScreen} options={{ headerShown: true, title: t('cart'), tabBarLabel: t('cart') }} />
       <Tab.Screen name="MyCourses" component={MyCoursesScreen} options={{ headerShown: false, tabBarLabel: t('my_courses') }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false, tabBarLabel: t('profile') }} />
       {isAdmin ? (

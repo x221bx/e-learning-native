@@ -7,12 +7,32 @@ import { useColors } from '../theme/hooks';
 import RatingStars from './RatingStars';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleFavorite } from '../store/favoritesSlice';
+import { addToCart,clearCart, removeFromCart } from '../store/cart';
+
 
 export function CourseCardHorizontal({ course, onPress }) {
   const colors = useColors();
   const favIds = useSelector((s) => s.favorites.ids);
   const dispatch = useDispatch();
   const isFav = favIds.includes(course.id);
+
+  const cartItems = useSelector((state) => state.cart?.items || []);
+
+  const handleAddToCart = () => {
+    dispatch(addToCart(course));
+  }
+
+  const handleRemoveFromCart = () => {
+    dispatch(removeFromCart(course.id));
+  }
+
+  const handleClearCart = () => {
+    dispatch(clearCart());
+  }
+
+  
+  const isInCart = cartItems.some(item => item.id === course.id);
+
   return (
     <TouchableOpacity 
       style={[styles.hCard, { backgroundColor: colors.card }]} 
@@ -34,6 +54,9 @@ export function CourseCardHorizontal({ course, onPress }) {
         )}
         <TouchableOpacity style={styles.favBtn} onPress={() => dispatch(toggleFavorite(course.id))}>
           <Ionicons name={isFav ? 'bookmark' : 'bookmark-outline'} size={18} color={isFav ? theme.colors.primary : '#fff'} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.cartBtn} onPress={isInCart ? handleRemoveFromCart : handleAddToCart}>
+          <Ionicons name={isInCart ? 'cart' : 'cart-outline'} size={18} color={isInCart ? theme.colors.primary : '#fff'} />
         </TouchableOpacity>
         <View style={styles.overlay} />
       </View>
@@ -136,6 +159,14 @@ const styles = StyleSheet.create({
   favBtn: {
     position: 'absolute',
     top: theme.spacing.sm,
+    right: theme.spacing.sm,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    padding: 6,
+    borderRadius: theme.radius.sm,
+  },
+  cartBtn: {
+    position: 'absolute',
+    top: theme.spacing.sm + 35,
     right: theme.spacing.sm,
     backgroundColor: 'rgba(0,0,0,0.35)',
     padding: 6,

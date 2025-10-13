@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, use } from 'react';
 import { View, Text, StyleSheet, ScrollView, Platform, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,7 +19,7 @@ import config from '../config';
 import { useSelector, useDispatch } from 'react-redux';
 import { setDarkMode, setUnread } from '../store/uiSlice';
 import { loadWishlist } from '../store/slices/wishlistSlice';
-
+import { useNavigation } from '@react-navigation/native';
 export default function HomeScreen({ navigation }) {
   const colors = useColors();
   const [popular, setPopular] = useState([]);
@@ -39,6 +39,9 @@ export default function HomeScreen({ navigation }) {
     // Load guest wishlist by default
     dispatch(loadWishlist());
   }, [dispatch]);
+
+ 
+
 
   const badgeCount = wishlistItems.length || favIds.length;
 

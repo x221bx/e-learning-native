@@ -8,6 +8,7 @@ import wishlistReducer from './slices/wishlistSlice';
 import favoritesReducer from './favoritesSlice';
 import userReducer from './userSlice';
 import uiReducer from './uiSlice';
+import cartReducer from './cart';
 
 // Create Redux store
 const store = configureStore({
@@ -17,6 +18,7 @@ const store = configureStore({
         favorites: favoritesReducer,
         user: userReducer,
         ui: uiReducer,
+        cart: cartReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware(),
