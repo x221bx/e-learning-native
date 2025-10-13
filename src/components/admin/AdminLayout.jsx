@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors } from '../../theme/hooks';
 import theme from '../../theme';
 import { t } from '../../i18n';
 import { useSelector } from 'react-redux';
+import ScreenContainer from '../layout/ScreenContainer';
 
 // AdminButton: primary, danger, outline variants
 export function AdminButton({ label, icon, onPress, variant = 'primary', style, textStyle }) {
@@ -99,18 +100,19 @@ export default function AdminLayout({ title, subtitle, actions, children, scroll
     </View>
   );
 
-  const Content = (
-    <View style={[styles.container, { backgroundColor: colors.background }]}> 
+  return (
+    <ScreenContainer
+      scrollable={scrollable}
+      gradient={false}
+      withPadding={false}
+      contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}
+      showScrollIndicator
+    >
       {Header}
       {isAdmin ? <AdminTopNav /> : null}
       <View style={[styles.content, contentStyle]}>{children}</View>
-    </View>
+    </ScreenContainer>
   );
-
-  if (scrollable) {
-    return <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: theme.spacing.xxl }}>{Content}</ScrollView>;
-  }
-  return Content;
 }
 
 const styles = StyleSheet.create({
@@ -125,12 +127,31 @@ const styles = StyleSheet.create({
   content: { marginTop: theme.spacing.base },
 
   // Buttons
-  btn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8, borderRadius: theme.radius.md, borderWidth: 1 },
+  btn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+  },
   btnText: { fontWeight: theme.fontWeight.bold },
 
   // Card
-  card: { borderRadius: theme.radius.lg, borderWidth: 1, ...theme.shadow.card, overflow: Platform.OS === 'web' ? 'visible' : 'hidden' },
-  cardHeader: { paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  card: {
+    borderRadius: theme.radius.lg,
+    borderWidth: 1,
+    ...theme.shadow.card,
+    overflow: Platform.OS === 'web' ? 'visible' : 'hidden',
+  },
+  cardHeader: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   cardTitle: { fontWeight: theme.fontWeight.extrabold },
   cardBody: { padding: 12 },
 

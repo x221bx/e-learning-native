@@ -23,6 +23,17 @@ module.exports = async function (env, argv) {
         })
     );
 
+    // Ensure Expo Router knows where the app directory lives when bundling for web
+    const appDirectory = path.resolve(__dirname, 'app');
+    if (!process.env.EXPO_ROUTER_APP_ROOT) {
+      process.env.EXPO_ROUTER_APP_ROOT = appDirectory;
+    }
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        'process.env.EXPO_ROUTER_APP_ROOT': JSON.stringify(appDirectory),
+      })
+    );
+
     // Silence specific drawer legacy + reanimated export warnings on web builds
     const filterDrawerReanimated = (warning) => {
       const msg = (warning && (warning.message || warning.details || '')) + '';

@@ -2,7 +2,7 @@ import { useSelector } from 'react-redux';
 import { colorsLight, colorsDark } from './palette';
 
 function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
-function hexToRgb(hex) {
+export function hexToRgb(hex) {
   const h = (hex || '').replace('#','');
   if (h.length !== 6) return { r:108, g:99, b:255 }; // fallback to default primary
   const r = parseInt(h.substring(0,2),16);
@@ -10,15 +10,21 @@ function hexToRgb(hex) {
   const b = parseInt(h.substring(4,6),16);
   return { r, g, b };
 }
-function rgbToHex({ r, g, b }) {
+export function rgbToHex({ r, g, b }) {
   const p = (n) => clamp(Math.round(n),0,255).toString(16).padStart(2,'0');
   return `#${p(r)}${p(g)}${p(b)}`;
 }
-function mix(hex, amt) {
+export function mix(hex, amt) {
   // amt range [-1,1]: negative -> darker, positive -> lighter
   const { r, g, b } = hexToRgb(hex);
   const m = (v) => v + (amt >= 0 ? (255 - v) * amt : v * amt);
   return rgbToHex({ r: m(r), g: m(g), b: m(b) });
+}
+
+export function withOpacity(hex, alpha = 1) {
+  const { r, g, b } = hexToRgb(hex);
+  const safeAlpha = clamp(alpha, 0, 1);
+  return `rgba(${r},${g},${b},${safeAlpha})`;
 }
 
 export function useColors() {
