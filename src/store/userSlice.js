@@ -51,6 +51,12 @@ const userSlice = createSlice({
       if (updates?.role) state.isAdmin = Boolean(updates.role === 'admin' || updates.role === 'teacher');
     },
 
+    // Load persisted enrolled courses on app start
+    loadEnrolledCourses(state, action) {
+      const enrolled = action.payload || [];
+      state.enrolled = enrolled;
+    },
+
     joinCourse(state, action) {
       const id = action.payload;
       if (!state.enrolled.includes(id)) state.enrolled.push(id);
@@ -59,22 +65,28 @@ const userSlice = createSlice({
       const id = action.payload;
       state.enrolled = state.enrolled.filter((x) => x !== id);
     },
+    enrollInCourse(state, action) {
+      const id = action.payload;
+      if (!state.enrolled.includes(id)) state.enrolled.push(id);
+    },
     clearEnrollments(state) {
       state.enrolled = [];
     },
   },
 });
 
-export const { 
-  loginSuccess, 
-  registerSuccess, 
-  continueAsGuest, 
+export const {
+  loginSuccess,
+  registerSuccess,
+  continueAsGuest,
   logout,
-  setAdmin, 
+  setAdmin,
   updateProfile,
-  joinCourse, 
-  unjoinCourse, 
-  clearEnrollments 
+  joinCourse,
+  unjoinCourse,
+  enrollInCourse,
+  loadEnrolledCourses,
+  clearEnrollments
 } = userSlice.actions;
 
 export default userSlice.reducer;

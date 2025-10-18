@@ -5,6 +5,7 @@ import React from 'react';
 // Import all slices
 import coursesReducer from './slices/coursesSlice';
 import wishlistReducer from './slices/wishlistSlice';
+import cartReducer from './slices/cartSlice';
 import favoritesReducer from './favoritesSlice';
 import userReducer from './userSlice';
 import uiReducer from './uiSlice';
@@ -14,6 +15,7 @@ const store = configureStore({
     reducer: {
         courses: coursesReducer,
         wishlist: wishlistReducer,
+        cart: cartReducer,
         favorites: favoritesReducer,
         user: userReducer,
         ui: uiReducer,

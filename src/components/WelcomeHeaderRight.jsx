@@ -12,8 +12,8 @@ export default function WelcomeHeaderRight({ navigation }) {
 
   const onGuest = async () => {
     dispatch(continueAsGuest());
-    try { await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ isGuest: true })); } catch {}
-    try { navigation.reset({ index: 0, routes: [{ name: 'HomeTabs' }] }); } catch {}
+    try { await AsyncStorage.setItem('@elearning_auth_state', JSON.stringify({ isGuest: true })); } catch { }
+    try { navigation.reset({ index: 0, routes: [{ name: 'MainTabs', params: { screen: 'Home' } }] }); } catch { }
   };
 
   return (

@@ -19,12 +19,48 @@ export default function AdminUsersScreen() {
   // Admin create account form state
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newPhone, setNewPhone] = useState('');
   const [newRole, setNewRole] = useState('student'); // 'student' | 'teacher'
+
+  // Edit user form state
+  const [editingUser, setEditingUser] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editRole, setEditRole] = useState('student');
+  const [editPassword, setEditPassword] = useState('');
 
   const persist = async (list) => {
     try {
       await AsyncStorage.setItem(USERS_KEY, JSON.stringify(list));
-    } catch {}
+    } catch { }
+  };
+
+  // If admin edits/deletes a user that is the current persisted auth user,
+  // keep the persisted auth record in sync so the app's role stays correct.
+  const syncAuthIfMatches = async (maybeUser, options = { removeOnDelete: false }) => {
+    try {
+      const raw = await AsyncStorage.getItem(AUTH_KEY);
+      if (!raw) return;
+      const auth = JSON.parse(raw) || {};
+      const current = auth?.user;
+      if (!current || !current.email || !maybeUser) return;
+      const curEmail = String(current.email).toLowerCase();
+      const targetEmail = String(maybeUser.email || '').toLowerCase();
+      if (curEmail !== targetEmail) return;
+
+      if (options.removeOnDelete) {
+        // remove persisted auth if the current user was deleted
+        await AsyncStorage.removeItem(AUTH_KEY);
+        return;
+      }
+
+      // otherwise update persisted auth.user with latest fields
+      const updatedAuth = { user: { ...(auth.user || {}), ...maybeUser } };
+      await AsyncStorage.setItem(AUTH_KEY, JSON.stringify(updatedAuth));
+    } catch (e) {
+      // ignore sync errors
+    }
   };
 
   const load = useCallback(async () => {
@@ -53,12 +89,12 @@ export default function AdminUsersScreen() {
             await persist(list);
           }
         }
-      } catch {}
+      } catch { }
 
       setUsers(list);
       const code = (await AsyncStorage.getItem(INVITE_KEY)) || '';
       setInviteCode(code);
-    } catch {}
+    } catch { }
     setLoading(false);
   }, []);
 
@@ -75,6 +111,11 @@ export default function AdminUsersScreen() {
       const updated = users.map((u) => (u.id === id ? { ...u, isApproved: approved } : u));
       setUsers(updated);
       await persist(updated);
+      // If we changed the approval/role of the current auth user, sync persisted auth
+      try {
+        const changed = updated.find((u) => u.id === id);
+        if (changed) await syncAuthIfMatches(changed);
+      } catch { }
     } catch (e) {
       Alert.alert('Error', e.message || 'Failed to update user');
     }
@@ -85,6 +126,11 @@ export default function AdminUsersScreen() {
       const updated = users.filter((u) => u.id !== id);
       setUsers(updated);
       await persist(updated);
+      // If the deleted user was the current auth user, remove persisted auth
+      try {
+        const deleted = users.find((u) => u.id === id);
+        if (deleted) await syncAuthIfMatches(deleted, { removeOnDelete: true });
+      } catch { }
     } catch (e) {
       Alert.alert('Error', e.message || 'Failed to delete user');
     }
@@ -113,10 +159,14 @@ export default function AdminUsersScreen() {
   const createUser = async () => {
     const name = (newName || '').trim();
     const email = (newEmail || '').trim();
+    const password = (newPassword || '').trim();
+    const phone = (newPhone || '').trim();
     const role = (newRole || 'student').toLowerCase();
 
-    if (!name) return Alert.alert('Validation', 'Name is required');
-    if (!email) return Alert.alert('Validation', 'Email is required');
+    if (!name) return Alert.alert('Validation', 'Full name is required');
+    if (!email) return Alert.alert('Validation', 'Email address is required');
+    if (!password) return Alert.alert('Validation', 'Password is required');
+    if (password.length < 6) return Alert.alert('Validation', 'Password must be at least 6 characters');
     const exists = users.some((u) => (u.email || '').toLowerCase() === email.toLowerCase());
     if (exists) return Alert.alert('Validation', 'Email already exists');
     if (!['student', 'teacher', 'admin'].includes(role)) return Alert.alert('Validation', 'Invalid role');
@@ -125,21 +175,82 @@ export default function AdminUsersScreen() {
       id: Date.now(),
       name,
       email,
+      password,
+      phone: phone || undefined,
       role,
       isApproved: role === 'teacher' ? false : true,
       avatar: 'https://i.pravatar.cc/150?u=' + encodeURIComponent(email),
+      createdAt: new Date().toISOString(),
     };
 
     const list = [u, ...users];
     setUsers(list);
     await persist(list);
+    // If the created user's email matches the current persisted auth (unlikely), sync it
+    try { await syncAuthIfMatches(u); } catch { }
     setNewName('');
     setNewEmail('');
+    setNewPassword('');
+    setNewPhone('');
     setNewRole('student');
+    Alert.alert('Success', 'User account created successfully');
+  };
+
+  const editUser = (user) => {
+    setEditingUser(user);
+    setEditName(user.name || '');
+    setEditEmail(user.email || '');
+    setEditRole(user.role || 'student');
+    setEditPassword('');
+  };
+
+  const saveUserEdit = async () => {
+    if (!editingUser) return;
+
+    const name = (editName || '').trim();
+    const email = (editEmail || '').trim();
+    const role = (editRole || 'student').toLowerCase();
+    const password = (editPassword || '').trim();
+
+    if (!name) return Alert.alert('Validation', 'Name is required');
+    if (!email) return Alert.alert('Validation', 'Email is required');
+    const exists = users.some((u) => u.id !== editingUser.id && (u.email || '').toLowerCase() === email.toLowerCase());
+    if (exists) return Alert.alert('Validation', 'Email already exists');
+    if (!['student', 'teacher', 'admin'].includes(role)) return Alert.alert('Validation', 'Invalid role');
+
+    const updatedUser = {
+      ...editingUser,
+      name,
+      email,
+      role,
+      isApproved: role === 'teacher' ? editingUser.isApproved : true,
+      ...(password ? { password } : {}),
+    };
+
+    const updated = users.map((u) => (u.id === editingUser.id ? updatedUser : u));
+    setUsers(updated);
+    await persist(updated);
+    // If we changed the current auth user, sync persisted auth
+    try { await syncAuthIfMatches(updatedUser); } catch { }
+
+    setEditingUser(null);
+    setEditName('');
+    setEditEmail('');
+    setEditRole('student');
+    setEditPassword('');
+    Alert.alert('Success', 'User updated successfully');
+  };
+
+  const cancelEdit = () => {
+    setEditingUser(null);
+    setEditName('');
+    setEditEmail('');
+    setEditRole('student');
+    setEditPassword('');
   };
 
   const renderRow = (item) => (
-    <View key={item.id} style={styles.row}>
+    <TouchableOpacity key={item.id} style={styles.row} onPress={() => editUser(item)}>
       <View style={{ flex: 1 }}>
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.sub}>{item.email} • {item.role}{item.role === 'teacher' ? ` • ${item.isApproved ? 'Approved' : 'Pending'}` : ''}</Text>
@@ -158,23 +269,25 @@ export default function AdminUsersScreen() {
       <TouchableOpacity style={[styles.iconBtn, styles.btnDanger]} onPress={() => onDeletePress(item)}>
         <Ionicons name="trash" size={16} color="#fff" />
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
-    <AdminLayout title="Users" subtitle="Approve teachers, manage students, and invitations" scrollable={false}>
+    <AdminLayout title="Users" subtitle="Approve teachers, manage students, and invitations">
       {/* Create account */}
-      <AdminCard title="Create Account (Student/Teacher)">
+      <AdminCard title="Create New User Account">
         <View style={styles.createRow}>
           <TextInput
             style={[styles.input, { flex: 1 }]}
-            placeholder="Name"
+            placeholder="Full Name"
             value={newName}
             onChangeText={setNewName}
           />
+        </View>
+        <View style={[styles.createRow, { marginTop: 8 }]}>
           <TextInput
             style={[styles.input, { flex: 1 }]}
-            placeholder="Email"
+            placeholder="Email Address"
             autoCapitalize="none"
             keyboardType="email-address"
             value={newEmail}
@@ -182,76 +295,140 @@ export default function AdminUsersScreen() {
           />
         </View>
         <View style={[styles.createRow, { marginTop: 8 }]}>
+          <TextInput
+            style={[styles.input, { flex: 1 }]}
+            placeholder="Password (min 6 characters)"
+            secureTextEntry
+            value={newPassword}
+            onChangeText={setNewPassword}
+          />
+        </View>
+        <View style={[styles.createRow, { marginTop: 8 }]}>
+          <TextInput
+            style={[styles.input, { flex: 1 }]}
+            placeholder="Phone Number (optional)"
+            keyboardType="phone-pad"
+            value={newPhone}
+            onChangeText={setNewPhone}
+          />
+        </View>
+        <View style={[styles.createRow, { marginTop: 8 }]}>
           <TouchableOpacity
             style={[styles.roleChip, newRole === 'student' ? styles.roleChipActive : null]}
             onPress={() => setNewRole('student')}
           >
+            <Ionicons name="school" size={16} color={newRole === 'student' ? '#fff' : colors.primary} style={{ marginRight: 6 }} />
             <Text style={[styles.roleChipText, newRole === 'student' ? styles.roleChipTextActive : null]}>Student</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.roleChip, newRole === 'teacher' ? styles.roleChipActive : null]}
             onPress={() => setNewRole('teacher')}
           >
+            <Ionicons name="people" size={16} color={newRole === 'teacher' ? '#fff' : colors.primary} style={{ marginRight: 6 }} />
             <Text style={[styles.roleChipText, newRole === 'teacher' ? styles.roleChipTextActive : null]}>Teacher</Text>
           </TouchableOpacity>
-          <AdminButton label="Add" icon="add" onPress={createUser} />
         </View>
-        <Text style={styles.hint}>Teacher accounts start as Pending and require approval.</Text>
+        <View style={[styles.createRow, { marginTop: 12 }]}>
+          <AdminButton label="Create Account" icon="person-add" onPress={createUser} />
+        </View>
+        <Text style={styles.hint}>Teacher accounts start as Pending and require approval before they can access teaching features.</Text>
       </AdminCard>
 
-      {/* Invite code section for teachers */}
-      <AdminCard title="Teacher Invite Code">
-        <View style={styles.inviteRow}>
-          <TextInput
-            style={[styles.input, { flex: 1 }]}
-            placeholder="Enter or generate code"
-            value={inviteCode}
-            onChangeText={setInviteCode}
-            autoCapitalize="characters"
-          />
-          <AdminButton label="Save" icon="save" onPress={saveInvite} />
-          <AdminButton label="Generate" icon="refresh" variant="outline" onPress={generateInvite} />
-        </View>
-      </AdminCard>
-
-      <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
-        {/* Pending Teachers */}
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Pending Teachers ({pending.length})</Text>
-        {pending.length === 0 ? (
-          <Text style={styles.empty}>No pending teachers</Text>
-        ) : (
-          pending.map(renderRow)
-        )}
-
-        {/* All Teachers */}
-        <Text style={[styles.sectionTitle, { marginTop: 16, color: colors.text }]}>All Teachers ({teachers.length})</Text>
-        {teachers.length === 0 ? (
-          <Text style={styles.empty}>No teachers</Text>
-        ) : (
-          teachers.map(renderRow)
-        )}
-
-        {/* Students */}
-        <Text style={[styles.sectionTitle, { marginTop: 16, color: colors.text }]}>Students ({students.length})</Text>
-        {students.length === 0 ? (
-          <Text style={styles.empty}>No students</Text>
-        ) : (
-          students.map(renderRow)
-        )}
-
-        {/* All Emails */}
-        <AdminCard title={`All Registered Emails (${users.length})`}>
-          {users.length === 0 ? (
-            <Text style={styles.empty}>No users</Text>
-          ) : (
-            <View style={{ gap: 6 }}>
-              {users.map((u) => (
-                <Text key={u.id} style={styles.emailItem}>{u.email}</Text>
-              ))}
-            </View>
-          )}
+      {/* Edit User Modal */}
+      {editingUser && (
+        <AdminCard title={`Edit User: ${editingUser.name}`}>
+          <View style={styles.createRow}>
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              placeholder="Name"
+              value={editName}
+              onChangeText={setEditName}
+            />
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              placeholder="Email"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={editEmail}
+              onChangeText={setEditEmail}
+            />
+          </View>
+          <View style={[styles.createRow, { marginTop: 8 }]}>
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              placeholder="New Password (leave empty to keep current)"
+              secureTextEntry
+              value={editPassword}
+              onChangeText={setEditPassword}
+            />
+          </View>
+          <View style={[styles.createRow, { marginTop: 8 }]}>
+            <TouchableOpacity
+              style={[styles.roleChip, editRole === 'student' ? styles.roleChipActive : null]}
+              onPress={() => setEditRole('student')}
+            >
+              <Ionicons name="school" size={16} color={editRole === 'student' ? '#fff' : colors.primary} style={{ marginRight: 6 }} />
+              <Text style={[styles.roleChipText, editRole === 'student' ? styles.roleChipTextActive : null]}>Student</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.roleChip, editRole === 'teacher' ? styles.roleChipActive : null]}
+              onPress={() => setEditRole('teacher')}
+            >
+              <Ionicons name="people" size={16} color={editRole === 'teacher' ? '#fff' : colors.primary} style={{ marginRight: 6 }} />
+              <Text style={[styles.roleChipText, editRole === 'teacher' ? styles.roleChipTextActive : null]}>Teacher</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.roleChip, editRole === 'admin' ? styles.roleChipActive : null]}
+              onPress={() => setEditRole('admin')}
+            >
+              <Ionicons name="settings" size={16} color={editRole === 'admin' ? '#fff' : colors.primary} style={{ marginRight: 6 }} />
+              <Text style={[styles.roleChipText, editRole === 'admin' ? styles.roleChipTextActive : null]}>Admin</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={[styles.createRow, { marginTop: 12 }]}>
+            <AdminButton label="Save" icon="save" onPress={saveUserEdit} />
+            <AdminButton label="Cancel" icon="close" variant="outline" onPress={cancelEdit} />
+          </View>
         </AdminCard>
-      </ScrollView>
+      )}
+
+
+      {/* Pending Teachers */}
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>Pending Teachers ({pending.length})</Text>
+      {pending.length === 0 ? (
+        <Text style={styles.empty}>No pending teachers</Text>
+      ) : (
+        pending.map(renderRow)
+      )}
+
+      {/* All Teachers */}
+      <Text style={[styles.sectionTitle, { marginTop: 16, color: colors.text }]}>All Teachers ({teachers.length})</Text>
+      {teachers.length === 0 ? (
+        <Text style={styles.empty}>No teachers</Text>
+      ) : (
+        teachers.map(renderRow)
+      )}
+
+      {/* Students */}
+      <Text style={[styles.sectionTitle, { marginTop: 16, color: colors.text }]}>Students ({students.length})</Text>
+      {students.length === 0 ? (
+        <Text style={styles.empty}>No students</Text>
+      ) : (
+        students.map(renderRow)
+      )}
+
+      {/* All Emails */}
+      <AdminCard title={`All Registered Emails (${users.length})`}>
+        {users.length === 0 ? (
+          <Text style={styles.empty}>No users</Text>
+        ) : (
+          <View style={{ gap: 6 }}>
+            {users.map((u) => (
+              <Text key={u.id} style={styles.emailItem}>{u.email}</Text>
+            ))}
+          </View>
+        )}
+      </AdminCard>
     </AdminLayout>
   );
 }
@@ -267,6 +444,7 @@ const styles = StyleSheet.create({
   btnPrimary: { backgroundColor: theme.colors.primary },
   btnDanger: { backgroundColor: theme.colors.danger },
   btnOutline: { borderWidth: 1, borderColor: theme.colors.primary, backgroundColor: 'transparent' },
+  btnSecondary: { backgroundColor: theme.colors.secondary },
   btnText: { color: '#fff', fontWeight: '700' },
   empty: { color: theme.colors.muted, fontStyle: 'italic' },
   inviteBox: { backgroundColor: theme.colors.card, padding: 12, borderRadius: 12, marginBottom: 12 },

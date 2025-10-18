@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
+import { goToLogin } from '../utils/nav';
 import { setDarkMode, setLocaleUI, setPrimaryColor } from '../store/uiSlice';
 import { setLocale, getLocale } from '../i18n';
 import { useColors } from '../theme/hooks';
@@ -24,7 +25,7 @@ export default function QuickPrefsHeaderRight({ tint = 'auto' }) {
     const idx = Math.max(0, palette.findIndex((c) => c.toLowerCase() === (colors.primary || '').toLowerCase()));
     const next = palette[(idx + 1) % palette.length];
     dispatch(setPrimaryColor(next));
-    try { await AsyncStorage.setItem(COLOR_KEY, next); } catch {}
+    try { await AsyncStorage.setItem(COLOR_KEY, next); } catch { }
   };
 
   const toggleLocale = () => {
@@ -52,7 +53,7 @@ export default function QuickPrefsHeaderRight({ tint = 'auto' }) {
         <Ionicons name="language-outline" size={22} color={iconColor} />
       </TouchableOpacity>
       {!isAuthenticated ? (
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+        <TouchableOpacity onPress={() => goToLogin(navigation)}>
           <Ionicons name="log-in-outline" size={22} color={iconColor} />
         </TouchableOpacity>
       ) : (

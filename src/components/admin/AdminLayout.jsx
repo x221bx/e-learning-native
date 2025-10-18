@@ -14,7 +14,7 @@ export function AdminButton({ label, icon, onPress, variant = 'primary', style, 
   const borderColor = variant === 'outline' ? colors.primary : 'transparent';
   const color = variant === 'outline' ? colors.primary : '#fff';
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.btn, { backgroundColor: bg, borderColor }, style]}> 
+    <TouchableOpacity onPress={onPress} style={[styles.btn, { backgroundColor: bg, borderColor }, style]}>
       {icon ? <Ionicons name={icon} size={16} color={color} style={{ marginRight: 6 }} /> : null}
       <Text style={[styles.btnText, { color }, textStyle]}>{label}</Text>
     </TouchableOpacity>
@@ -100,7 +100,7 @@ export default function AdminLayout({ title, subtitle, actions, children, scroll
   );
 
   const Content = (
-    <View style={[styles.container, { backgroundColor: colors.background }]}> 
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {Header}
       {isAdmin ? <AdminTopNav /> : null}
       <View style={[styles.content, contentStyle]}>{children}</View>
@@ -108,15 +108,7 @@ export default function AdminLayout({ title, subtitle, actions, children, scroll
   );
 
   if (scrollable) {
-    return (
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: theme.spacing.xxl, flexGrow: 1 }}
-        showsVerticalScrollIndicator
-      >
-        {Content}
-      </ScrollView>
-    );
+    return <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, paddingBottom: theme.spacing.xxl }}>{Content}</ScrollView>;
   }
   return Content;
 }

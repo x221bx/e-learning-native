@@ -23,28 +23,9 @@ module.exports = async function (env, argv) {
         })
     );
 
-    // Ensure Expo Router knows where the app directory lives when bundling for web
-    const appDirectory = path.resolve(__dirname, 'app');
- 
-  main
-    config.plugins.push(
-      new webpack.DefinePlugin({
-        'process.env.EXPO_ROUTER_APP_ROOT': JSON.stringify(appDirectory),
-      })
-    );
-
-    // Silence specific drawer legacy + reanimated export warnings on web builds
-    const filterDrawerReanimated = (warning) => {
-      const msg = (warning && (warning.message || warning.details || '')) + '';
-      return msg.includes('@react-navigation/drawer') && msg.includes('legacy/Drawer.js') && msg.includes('react-native-reanimated');
-    };
-    config.ignoreWarnings = [...(config.ignoreWarnings || []), filterDrawerReanimated];
-
-    // Avoid bundling legacy drawer implementation that imports Reanimated v1 APIs
+    // (drawer removed) keep other aliases intact
     config.resolve.alias = {
         ...(config.resolve.alias || {}),
-        '@react-navigation/drawer/lib/module/views/legacy/Drawer': path.resolve(__dirname, 'src/shims/legacyDrawerStub.js'),
-        '@react-navigation/drawer/lib/commonjs/views/legacy/Drawer': path.resolve(__dirname, 'src/shims/legacyDrawerStub.js'),
     };
 
     return config;

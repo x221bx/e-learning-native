@@ -33,7 +33,27 @@ export default function AdminCoursesScreen({ navigation }) {
     }
   }, [offset, loading, hasMore, query]);
 
-  useEffect(() => { load(); }, []);
+  const reload = useCallback(async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const res = await CoursesAPI.list({ offset: 0, limit: config.PAGE_SIZE, onlyPublished: false, q: query || undefined });
+      const chunk = res.items || [];
+      setItems(chunk);
+      setOffset(chunk.length);
+      setHasMore(Boolean(res.hasMore));
+    } catch (e) {
+      setHasMore(false);
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, query]);
+
+  useEffect(() => {
+    load();
+    const unsub = navigation.addListener('focus', reload);
+    return unsub;
+  }, [navigation, load, reload]);
 
   const filtered = useMemo(() => {
     const q = (query || '').toLowerCase();
@@ -47,12 +67,14 @@ export default function AdminCoursesScreen({ navigation }) {
   const onDelete = (id) => {
     Alert.alert('Delete Course', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => {
-        try {
-          await CoursesAPI.remove(id);
-          setItems((prev) => prev.filter((c) => c.id !== id));
-        } catch (e) {}
-      }},
+      {
+        text: 'Delete', style: 'destructive', onPress: async () => {
+          try {
+            await CoursesAPI.remove(id);
+            setItems((prev) => prev.filter((c) => c.id !== id));
+          } catch (e) { }
+        }
+      },
     ]);
   };
 
@@ -60,7 +82,7 @@ export default function AdminCoursesScreen({ navigation }) {
     try {
       const updated = await CoursesAPI.setPublished(course.id, !course.published);
       setItems((prev) => prev.map((x) => (x.id === course.id ? updated : x)));
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const setAllSelected = (ids, value) => setSelected((prev) => ids.reduce((acc, id) => ({ ...acc, [id]: value }), { ...prev }));
@@ -70,13 +92,15 @@ export default function AdminCoursesScreen({ navigation }) {
     if (selectedIds.length === 0) return;
     Alert.alert('Delete', `Delete ${selectedIds.length} courses?`, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => {
-        for (const id of selectedIds) {
-          try { await CoursesAPI.remove(id); } catch {}
+      {
+        text: 'Delete', style: 'destructive', onPress: async () => {
+          for (const id of selectedIds) {
+            try { await CoursesAPI.remove(id); } catch { }
+          }
+          setItems((prev) => prev.filter((c) => !selectedIds.includes(c.id)));
+          setSelected({});
         }
-        setItems((prev) => prev.filter((c) => !selectedIds.includes(c.id)));
-        setSelected({});
-      }},
+      },
     ]);
   };
 
@@ -84,7 +108,7 @@ export default function AdminCoursesScreen({ navigation }) {
     for (const id of selectedIds) {
       const course = items.find((c) => c.id === id);
       if (!course) continue;
-      try { await CoursesAPI.setPublished(id, value); } catch {}
+      try { await CoursesAPI.setPublished(id, value); } catch { }
     }
     setItems((prev) => prev.map((c) => (selectedIds.includes(c.id) ? { ...c, published: value } : c)));
     setSelected({});
@@ -94,8 +118,7 @@ export default function AdminCoursesScreen({ navigation }) {
     <AdminLayout
       title="Courses"
       subtitle="Manage, filter and bulk edit courses"
-      actions={[{ label: t('add_course'), icon: 'add', onPress: () => navigation.navigate('AdminCourseForm') }]}
-      scrollable={false}
+      actions={[{ label: t('add_course'), icon: 'add', onPress: () => navigation.navigate('AdminCourseForm') }, { label: t('refresh') || 'Refresh', icon: 'refresh', variant: 'outline', onPress: reload }]}
     >
       <AdminCard>
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
@@ -106,13 +129,13 @@ export default function AdminCoursesScreen({ navigation }) {
             value={query}
             onChangeText={setQuery}
           />
-          <TouchableOpacity onPress={() => setShowOnly('all')} style={[styles.chip, showOnly === 'all' && { backgroundColor: colors.primary }]}> 
+          <TouchableOpacity onPress={() => setShowOnly('all')} style={[styles.chip, showOnly === 'all' && { backgroundColor: colors.primary }]}>
             <Text style={[styles.chipText, { color: showOnly === 'all' ? '#fff' : colors.muted }]}>All</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setShowOnly('published')} style={[styles.chip, showOnly === 'published' && { backgroundColor: colors.primary }]}> 
+          <TouchableOpacity onPress={() => setShowOnly('published')} style={[styles.chip, showOnly === 'published' && { backgroundColor: colors.primary }]}>
             <Text style={[styles.chipText, { color: showOnly === 'published' ? '#fff' : colors.muted }]}>Published</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setShowOnly('drafts')} style={[styles.chip, showOnly === 'drafts' && { backgroundColor: colors.primary }]}> 
+          <TouchableOpacity onPress={() => setShowOnly('drafts')} style={[styles.chip, showOnly === 'drafts' && { backgroundColor: colors.primary }]}>
             <Text style={[styles.chipText, { color: showOnly === 'drafts' ? '#fff' : colors.muted }]}>Drafts</Text>
           </TouchableOpacity>
         </View>
@@ -130,10 +153,12 @@ export default function AdminCoursesScreen({ navigation }) {
         contentContainerStyle={{ paddingBottom: 20 }}
         data={filtered}
         keyExtractor={(c) => c.id}
+        refreshing={loading}
+        onRefresh={reload}
         onEndReached={hasMore ? load : undefined}
         onEndReachedThreshold={0.4}
         renderItem={({ item: c }) => (
-          <View style={[styles.row, { borderBottomColor: colors.border }]}> 
+          <View style={[styles.row, { borderBottomColor: colors.border }]}>
             <TouchableOpacity onPress={() => setSelected((prev) => ({ ...prev, [c.id]: !prev[c.id] }))} style={[styles.checkbox, { borderColor: colors.border, backgroundColor: selected[c.id] ? colors.primary : 'transparent' }]} />
             <View style={{ flex: 1, marginRight: 10 }}>
               <Text style={[styles.title, { color: colors.text }]}>{c.title}</Text>

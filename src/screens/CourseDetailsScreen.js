@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { joinCourse, unjoinCourse } from '../store/userSlice';
 import { toggleFavorite } from '../store/favoritesSlice';
 import styles from './CourseDetails.styles';
-import { goToMessages } from '../utils/nav';
+import { goToMessages, goToLogin } from '../utils/nav';
 import OverviewSection from './course/OverviewSection';
 import LessonsSection from './course/LessonsSection';
 import ReviewSection from './course/ReviewSection';
@@ -36,7 +36,8 @@ export default function CourseDetailsScreen({ route, navigation }) {
   const enrolledIds = useSelector((s) => s.user.enrolled);
   const dispatch = useDispatch();
   const isEnrolled = enrolledIds.includes(course?.id);
-  const isAuthenticated = true; // Auth removed
+  const isAuthenticated = useSelector((s) => s.user.isAuthenticated);
+  const isGuest = useSelector((s) => s.user.isGuest);
 
   useEffect(() => {
     let mounted = true;
@@ -92,8 +93,8 @@ export default function CourseDetailsScreen({ route, navigation }) {
           </View>
         </View>        <View style={styles.contentContainer}>
           {tab === 'OVERVIEW' && <OverviewSection course={course} teacher={teacher} navigation={navigation} />}
-          {tab === 'LESSONS' && <LessonsSection course={course} navigation={navigation} />} 
-          {tab === 'REVIEW' && <ReviewSection course={course} /> }
+          {tab === 'LESSONS' && <LessonsSection course={course} navigation={navigation} />}
+          {tab === 'REVIEW' && <ReviewSection course={course} />}
         </View>
       </ScrollView>
 
@@ -102,7 +103,13 @@ export default function CourseDetailsScreen({ route, navigation }) {
         course={course}
         teacher={teacher}
         isEnrolled={isEnrolled}
-        onJoin={() => dispatch(joinCourse(course.id))}
+        onJoin={() => {
+          if (isAuthenticated) {
+            try { navigation.navigate('Purchase', { items: [{ id: course.id, title: course.title, teacher: teacher.name, price: course.price || 19.99 }] }); } catch { }
+          } else {
+            try { goToLogin(navigation); } catch { }
+          }
+        }}
         onUnjoin={() => dispatch(unjoinCourse(course.id))}
         onMessage={() => goToMessages(navigation)}
       />

@@ -5,17 +5,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import theme from '../theme';
 import { useColors } from '../theme/hooks';
 import RatingStars from './RatingStars';
-import { useDispatch, useSelector } from 'react-redux';
-import { toggleFavorite } from '../store/favoritesSlice';
+import { useSelector } from 'react-redux';
+import CardIcons from './CardIcons';
 
 export function CourseCardHorizontal({ course, onPress }) {
   const colors = useColors();
-  const favIds = useSelector((s) => s.favorites.ids);
-  const dispatch = useDispatch();
-  const isFav = favIds.includes(course.id);
+  const enrolledIds = useSelector((s) => s.user.enrolled);
+  const isEnrolled = enrolledIds.includes(course.id);
   return (
-    <TouchableOpacity 
-      style={[styles.hCard, { backgroundColor: colors.card }]} 
+    <TouchableOpacity
+      style={[styles.hCard, { backgroundColor: colors.card }]}
       onPress={onPress}
       activeOpacity={0.8}
     >
@@ -26,16 +25,13 @@ export function CourseCardHorizontal({ course, onPress }) {
             colors={[theme.colors.secondary, '#FF8BA7']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={styles.badge}
+            style={[styles.badge, { zIndex: 5 }]}
           >
-            <Ionicons name="trophy" size={10} color="#fff" style={{ marginEnd: 4 }} />
+            <Ionicons name="trophy-outline" size={14} color="#fff" style={{ marginEnd: 6 }} />
             <Text style={styles.badgeText}>{require('../i18n').t('best_seller') || 'Best-seller'}</Text>
           </LinearGradient>
         )}
-        <TouchableOpacity style={styles.favBtn} onPress={() => dispatch(toggleFavorite(course.id))}>
-          <Ionicons name={isFav ? 'bookmark' : 'bookmark-outline'} size={18} color={isFav ? theme.colors.primary : '#fff'} />
-        </TouchableOpacity>
-        <View style={styles.overlay} />
+        <View style={styles.overlay} pointerEvents="none" />
       </View>
       <View style={styles.hCardContent}>
         <Text numberOfLines={2} style={[styles.title, { color: colors.text }]}>{course.title}</Text>
@@ -45,28 +41,25 @@ export function CourseCardHorizontal({ course, onPress }) {
           <RatingStars rating={course.rating} reviews={course.reviews} size={12} />
         </View>
       </View>
+      <View style={{ paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.sm }}>
+        <CardIcons course={course} />
+      </View>
     </TouchableOpacity>
   );
 }
 
 export function CourseCardVertical({ course, onPress, showBookmark }) {
   const colors = useColors();
-  const favIds = useSelector((s) => s.favorites.ids);
-  const dispatch = useDispatch();
-  const isFav = favIds.includes(course.id);
+  const enrolledIds = useSelector((s) => s.user.enrolled);
+  const isEnrolled = enrolledIds.includes(course.id);
   return (
-    <TouchableOpacity 
-      style={[styles.vCard, { backgroundColor: colors.card }]} 
+    <TouchableOpacity
+      style={[styles.vCard, { backgroundColor: colors.card }]}
       onPress={onPress}
       activeOpacity={0.8}
     >
       <View style={styles.vImageContainer}>
         <Image source={{ uri: course.thumbnail }} style={styles.vImage} resizeMode="cover" />
-        {showBookmark && (
-          <TouchableOpacity style={styles.bookmark} activeOpacity={0.7} onPress={() => dispatch(toggleFavorite(course.id))}>
-            <Ionicons name={isFav ? 'bookmark' : 'bookmark-outline'} size={18} color={isFav ? theme.colors.primary : theme.colors.primary} />
-          </TouchableOpacity>
-        )}
       </View>
       <View style={styles.vCardContent}>
         <Text numberOfLines={2} style={[styles.title, { color: colors.text }]}>{course.title}</Text>
@@ -83,6 +76,9 @@ export function CourseCardVertical({ course, onPress, showBookmark }) {
           <Text style={styles.reviewCount}>({course.reviews})</Text>
         </View>
       </View>
+      <View style={{ alignSelf: 'stretch', paddingStart: 0, paddingTop: theme.spacing.xs }}>
+        <CardIcons course={course} small />
+      </View>
     </TouchableOpacity>
   );
 }
@@ -96,14 +92,16 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.lg,
     overflow: 'hidden',
     ...theme.shadow.card,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
   },
   imageContainer: {
     position: 'relative',
     width: '100%',
     height: 140,
   },
-  hImage: { 
-    width: '100%', 
+  hImage: {
+    width: '100%',
     height: '100%',
   },
   overlay: {
@@ -128,9 +126,9 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.sm,
     ...theme.shadow.sm,
   },
-  badgeText: { 
-    color: '#fff', 
-    fontSize: theme.fontSize.xs, 
+  badgeText: {
+    color: '#fff',
+    fontSize: theme.fontSize.xs,
     fontWeight: theme.fontWeight.bold,
   },
   favBtn: {
@@ -147,7 +145,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: theme.spacing.sm,
   },
-  
+
   // Vertical Card Styles
   vCard: {
     flexDirection: 'row',
@@ -156,6 +154,8 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.lg,
     marginBottom: theme.spacing.md,
     ...theme.shadow.card,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
   },
   vImageContainer: {
     position: 'relative',
@@ -165,16 +165,25 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginEnd: theme.spacing.md,
   },
-  vImage: { 
-    width: '100%', 
+  vImage: {
+    width: '100%',
     height: '100%',
   },
-  bookmark: { 
-    position: 'absolute', 
-    right: theme.spacing.sm, 
-    top: theme.spacing.sm, 
-    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-    padding: 6, 
+  bookmark: {
+    position: 'absolute',
+    right: theme.spacing.sm,
+    top: theme.spacing.sm,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    padding: 6,
+    borderRadius: theme.radius.sm,
+    ...theme.shadow.sm,
+  },
+  cartBtnSmall: {
+    position: 'absolute',
+    left: theme.spacing.sm,
+    top: theme.spacing.sm,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    padding: 6,
     borderRadius: theme.radius.sm,
     ...theme.shadow.sm,
   },
@@ -182,23 +191,23 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
   },
-  
+
   // Common Styles
-  title: { 
-    fontSize: theme.fontSize.base, 
-    fontWeight: theme.fontWeight.bold, 
+  title: {
+    fontSize: theme.fontSize.base,
+    fontWeight: theme.fontWeight.bold,
     color: theme.colors.text,
     lineHeight: 22,
   },
-  author: { 
-    fontSize: theme.fontSize.sm, 
-    color: theme.colors.muted, 
+  author: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.muted,
     marginTop: theme.spacing.xs,
     fontWeight: theme.fontWeight.medium,
   },
-  price: { 
-    fontSize: theme.fontSize.md, 
-    color: theme.colors.primary, 
+  price: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.primary,
     fontWeight: theme.fontWeight.extrabold,
   },
   vMetaRow: {

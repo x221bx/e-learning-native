@@ -31,7 +31,9 @@ export default function BottomBar({ styles, course, teacher, isEnrolled, onJoin,
           </View>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <AppButton label={inWishlist ? 'Wishlisted' : 'Wishlist'} variant={inWishlist ? 'secondary' : 'outline'} leftIcon={inWishlist ? 'heart' : 'heart-outline'} onPress={toggleWishlist} />
+          {!isEnrolled ? (
+            <AppButton label={inWishlist ? 'Wishlisted' : 'Wishlist'} variant={inWishlist ? 'secondary' : 'outline'} leftIcon={inWishlist ? 'heart' : 'heart-outline'} onPress={toggleWishlist} />
+          ) : null}
           <AppButton label={t('message')} variant="outline" leftIcon="chatbubbles-outline" onPress={() => onMessage?.(teacher)} />
           {isEnrolled ? (
             <AppButton label={t('unjoin')} variant="outline" leftIcon="close" onPress={onUnjoin} />

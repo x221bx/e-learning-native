@@ -1,398 +1,171 @@
-# E-Learning Platform
+# EduHub - E-Learning Platform
 
-A comprehensive mobile and web e-learning application built with React Native and Expo, featuring course management, user authentication, and multi-language support.
+A comprehensive e-learning mobile application built with React Native and Expo, featuring course management, live streaming, user authentication, and admin panel.
 
 ## Features
 
-### Authentication System
-- **User Registration & Login**: Secure authentication with AsyncStorage
-- **Role-Based Access**: Support for Students, Teachers, and Admins
-- **Guest Mode**: Browse courses without authentication
-- **Teacher Approval System**: Admin approval required for teacher accounts
+### Core Functionality
+- **Course Management**: Browse, search, and enroll in courses with detailed descriptions, ratings, and reviews
+- **User Authentication**: Login, registration, and guest access with profile management
+- **Live Streaming**: Real-time live classes and sessions
+- **Messaging System**: In-app messaging and notifications
+- **Favorites & Wishlist**: Save and organize preferred courses
+- **Multi-language Support**: English and Arabic with RTL support
+- **Offline Support**: Mock API for development and testing
 
-### Course Management
-- **Course Listing**: Browse courses with lazy loading
-- **Course Details**: Comprehensive course information with ratings and reviews
-- **Search & Filter**: Advanced search with category filtering
-- **Course Enrollment**: Join and unenroll from courses
-- **Progress Tracking**: Track course completion and progress
+### User Features
+- **Home Dashboard**: Personalized course recommendations and statistics
+- **Course Details**: Comprehensive course information with teacher profiles
+- **Teacher Directory**: Browse and follow instructors
+- **Schedule Management**: View and manage class schedules
+- **Purchase System**: Secure course purchasing with cart functionality
+- **Progress Tracking**: Monitor learning progress and completion
 
 ### Admin Panel
-- **Course CRUD Operations**: Create, Read, Update, Delete courses
-- **User Management**: Approve teacher accounts
-- **Dashboard Analytics**: View platform statistics
+- **Dashboard**: Overview of platform statistics and analytics
+- **Course Management**: Create, edit, publish, and manage courses
+- **User Management**: Administer user accounts, approvals, and permissions
+- **Category Management**: Organize courses by categories
+- **Live Session Management**: Schedule and manage live streaming sessions
+- **Settings**: Configure platform settings and preferences
 
-### User Dashboard
-- **My Courses**: View enrolled courses
-- **Wishlist/Favorites**: Save courses for later using Redux
-- **Profile Management**: Update user information
-- **Learning Progress**: Track course completion
+## Technology Stack
 
-### Localization
-- **Multi-Language Support**: English and Arabic
-- **RTL Support**: Right-to-left layout for Arabic
-- **Dynamic Language Switching**: Change language on the fly
-
-### UI/UX Features
-- **Responsive Design**: Optimized for mobile, tablet, and web
-- **Modern UI**: Clean and intuitive interface with gradient effects
-- **Dark Mode Ready**: Theme system prepared for dark mode
-- **Smooth Animations**: Enhanced user experience with React Native Reanimated
-- **Bottom Sheet**: Interactive modals using @gorhom/bottom-sheet
-
-## Tech Stack
-
-### Core
-- **React Native**: 0.81.4
-- **Expo**: 54.0.12
-- **React**: 19.1.0
-
-### State Management
-- **Redux Toolkit**: 2.9.0
-- **React Redux**: 9.2.0
-- **Redux Persist**: 6.0.0
-
-### Navigation
-- **React Navigation**: 7.x
-  - Bottom Tabs Navigator
-  - Stack Navigator
-  - Native Stack Navigator
-
-### Storage
-- **AsyncStorage**: 2.2.0 (Local data persistence)
-
-### UI Components
-- **Expo Linear Gradient**: Gradient effects
-- **React Native Paper**: Material Design components
-- **React Native Ratings**: Star rating component
-- **Ionicons**: Icon library
-
-### Internationalization
-- **i18n-js**: 4.5.1
-- **expo-localization**: 17.0.7
-
-### Additional Features
-- **Expo Image**: Optimized image loading
-- **React Native Gesture Handler**: Touch interactions
-- **React Native Reanimated**: Smooth animations
-- **React Native Safe Area Context**: Safe area handling
+- **Framework**: React Native with Expo
+- **Navigation**: React Navigation (Stack, Tab, Drawer)
+- **State Management**: Redux Toolkit
+- **Styling**: Custom theme system with responsive design
+- **Internationalization**: i18n-js with automatic translation
+- **Icons**: Expo Vector Icons (Ionicons)
+- **Async Storage**: Persistent data storage
+- **Image Picker**: Expo Image Picker for profile customization
+- **Localization**: Expo Localization for device language detection
 
 ## Project Structure
 
 ```
-E-learing/
-├── src/
-│   ├── components/          # Reusable UI components
-│   │   ├── Accordion.jsx
-│   │   ├── AppButton.jsx
-│   │   ├── BannerPromo.jsx
-│   │   ├── CategoryCard.js
-│   │   ├── CourseCard.js
-│   │   ├── LanguageSwitcher.js
-│   │   ├── ProtectedRoute.js
-│   │   └── ...
-│   ├── screens/             # Application screens
-│   │   ├── auth/            # Authentication screens
-│   │   │   ├── WelcomeScreen.js
-│   │   │   ├── LoginScreen.js
-│   │   │   └── RegisterScreen.js
-│   │   ├── admin/           # Admin panel screens
-│   │   │   ├── AdminCoursesScreen.js
-│   │   │   └── CourseFormScreen.js
-│   │   ├── HomeScreen.js
-│   │   ├── CourseDetailsScreen.js
-│   │   ├── MyCoursesScreen.js
-│   │   ├── ProfileScreen.js
-│   │   └── ...
-│   ├── store/               # Redux store
-│   │   ├── slices/
-│   │   │   ├── authSlice.js
-│   │   │   ├── coursesSlice.js
-│   │   │   └── wishlistSlice.js
-│   │   ├── favoritesSlice.js
-│   │   ├── userSlice.js
-│   │   └── index.js
-│   ├── services/            # API services
-│   │   ├── api.js
-│   │   └── mockApi.js
-│   ├── i18n/                # Internationalization
-│   │   ├── en.json
-│   │   ├── ar.json
-│   │   └── index.js
-│   ├── utils/               # Utility functions
-│   │   └── permissions.js
-│   ├── mock/                # Mock data
-│   │   └── data.js
-│   ├── config.js            # App configuration
-│   └── theme.js             # Theme configuration
-├── App.js                   # Main app component
-├── index.js                 # Entry point
-├── package.json
-└── README.md
+src/
+├── components/          # Reusable UI components
+│   ├── admin/          # Admin-specific components
+│   └── ...             # General components (buttons, cards, etc.)
+├── screens/            # Application screens
+│   ├── admin/          # Admin panel screens
+│   ├── auth/           # Authentication screens
+│   ├── course/         # Course-related components
+│   └── ...             # Main app screens
+├── navigation/         # Navigation configuration
+├── services/           # API services and utilities
+├── store/              # Redux store and slices
+├── theme/              # Theme configuration and hooks
+├── i18n/               # Internationalization files
+├── mock/               # Mock data for development
+├── utils/              # Utility functions
+└── config.js           # Application configuration
 ```
 
 ## Installation
 
-### Prerequisites
-- Node.js (v16 or higher)
-- npm or yarn
-- Expo CLI
-- iOS Simulator (for iOS development)
-- Android Studio (for Android development)
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/x221bx/e-learning-native.git
+   cd e-learning-native-admin
+   ```
 
-### Setup
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd E-learing
-```
+3. **Configure environment** (optional):
+   - Set `EXPO_PUBLIC_API_URL` environment variable to point to your backend API
+   - If not set, the app will use mock data for development
 
-2. Install dependencies:
-```bash
-npm install
-# or
-yarn install
-```
+4. **Start the development server**:
+   ```bash
+   # For Android
+   npm run android
 
-3. Start the development server:
-```bash
-npm start
-# or
-expo start
-```
+   # For iOS
+   npm run ios
 
-4. Run on specific platform:
-```bash
-# iOS
-npm run ios
-
-# Android
-npm run android
-
-# Web
-npm run web
-```
+   # For Web
+   npm run web
+   ```
 
 ## Configuration
 
 ### API Configuration
-Edit `src/config.js` to configure API endpoints:
-
+Edit `src/config.js` to configure the API endpoint:
 ```javascript
-export default {
-  API_BASE_URL: 'https://your-api-url.com',
-  PAGE_SIZE: 10,
+const config = {
+  API_BASE_URL: process.env.EXPO_PUBLIC_API_URL || '', // Leave empty for mock API
+  PAGE_SIZE: 10, // Items per page for pagination
 };
 ```
 
-### Theme Customization
-Modify `src/theme.js` to customize colors, spacing, and other design tokens.
+### Environment Variables
+- `EXPO_PUBLIC_API_URL`: Backend API base URL (optional)
 
-### Localization
-Add or modify translations in:
-- `src/i18n/en.json` (English)
-- `src/i18n/ar.json` (Arabic)
+## Key Components
 
-## State Management
+### Navigation
+- **TabsNavigator**: Main tab navigation with Home, Teachers, Live, Schedule, My Courses, Profile
+- **DrawerNavigator**: Side menu with additional navigation options
+- **Admin Stack**: Dedicated admin panel navigation
 
-### Redux Slices
+### State Management
+- **User Slice**: Authentication and user profile state
+- **UI Slice**: Theme, language, and UI preferences
+- **Courses Slice**: Course data and enrollment management
+- **Favorites/Wishlist/Cart Slices**: User preferences and shopping cart
 
-#### authSlice
-- User authentication state
-- Login/Logout actions
-- User session management
-- Guest mode support
+### Services
+- **API Service**: RESTful API client with retry logic and error handling
+- **Mock API**: Development data provider when backend is unavailable
+- **Auth Context**: Authentication state management
 
-#### coursesSlice
-- Course data management
-- CRUD operations
-- Enrollment management
+## Development
 
-#### wishlistSlice
-- Favorite courses
-- Add/Remove from wishlist
-
-#### userSlice
-- User profile data
-- Admin permissions
-- Enrolled courses
-
-## API Integration
-
-The app supports both real API and mock data:
-
-### Real API
-Configure `API_BASE_URL` in `src/config.js`
-
-### Mock API
-Falls back to mock data when API is not configured
-
-### API Endpoints
-```
-GET    /courses              - List courses
-GET    /courses/:id          - Get course details
-POST   /courses              - Create course (Admin)
-PUT    /courses/:id          - Update course (Admin)
-DELETE /courses/:id          - Delete course (Admin)
-```
-
-## Authentication Flow
-
-1. **Welcome Screen**: Initial landing page
-2. **Login/Register**: User authentication
-3. **Guest Mode**: Browse without account
-4. **Role-Based Access**: Different features for Students/Teachers/Admins
-
-### User Roles
-
-#### Student
-- Browse and search courses
-- Enroll in courses
-- Track progress
-- Manage wishlist
-
-#### Teacher
-- All student features
-- Create courses (pending approval)
-- Manage own courses
-
-#### Admin
-- All features
-- Approve teachers
-- Manage all courses
-- View analytics
-
-## Responsive Design
-
-The app is optimized for:
-- **Mobile**: iOS and Android phones
-- **Tablet**: iPad and Android tablets
-- **Web**: Desktop browsers
-
-### Breakpoints
-- Mobile: < 768px
-- Tablet: 768px - 1024px
-- Desktop: > 1024px
-
-## Performance Optimizations
-
-- **Lazy Loading**: Courses load incrementally
-- **Image Optimization**: Using Expo Image
-- **Memoization**: React.memo for expensive components
-- **Virtual Lists**: FlatList for long lists
-- **Code Splitting**: Dynamic imports for routes
-
-## Testing
-
+### Running Tests
 ```bash
-# Run tests
 npm test
-
-# Run with coverage
-npm test -- --coverage
 ```
 
-## Building for Production
-
-### Android
+### Building for Production
 ```bash
+# Build for Android
 expo build:android
-```
 
-### iOS
-```bash
+# Build for iOS
 expo build:ios
-```
 
-### Web
-```bash
-npm run web
+# Build for Web
 expo build:web
 ```
 
-## Deployment
-
-### Web Deployment
-The web version can be deployed to:
-- Vercel
-- Netlify
-- GitHub Pages
-- Firebase Hosting
-
-### Mobile Deployment
-- **iOS**: App Store via TestFlight
-- **Android**: Google Play Store
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Metro Bundler Issues**
-```bash
-expo start -c
-```
-
-2. **iOS Build Issues**
-```bash
-cd ios && pod install && cd ..
-```
-
-3. **Android Build Issues**
-```bash
-cd android && ./gradlew clean && cd ..
-```
+### Code Quality
+- ESLint configuration in `qodana.yaml`
+- Prettier for code formatting
+- TypeScript support planned for future versions
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Support
 
-For issues and questions:
+For support and questions:
 - Create an issue on GitHub
-- Contact: support@elearning.com
+- Contact the development team
 
-## Roadmap
+---
 
-### Phase 1: Core Features ✅
-- Authentication system
-- Course management
-- User dashboard
-- Admin panel
-
-### Phase 2: Enhanced Features ✅
-- Wishlist/Favorites
-- Localization (EN/AR)
-- Responsive design
-- Search & Filter
-
-### Phase 3: Advanced Features (Upcoming)
-- Video streaming
-- Live classes
-- Certificates
-- Payment integration
-- Social features
-- Notifications
-- Analytics dashboard
-
-## Credits
-
-Built with ❤️ us
-
-## Version History
-
-### v1.0.0 (Current)
-- Initial release
-- Authentication system
-- Course management
-- Multi-language support
-- Responsive design
+**EduHub** - Empowering education through technology.
