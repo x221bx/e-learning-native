@@ -3,6 +3,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import theme from '../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors } from '../theme/hooks';
+import RatingStars from './RatingStars';
 
 export default function TeacherCard({ teacher, onPress, variant = 'grid' }) {
   const colors = useColors();
@@ -20,6 +21,7 @@ export default function TeacherCard({ teacher, onPress, variant = 'grid' }) {
       <View style={isList ? styles.listBody : null}>
         <Text numberOfLines={1} style={[styles.name, { color: colors.text }]}>{teacher.name}</Text>
         <Text numberOfLines={1} style={[styles.title, { color: colors.muted }]}>{teacher.title}</Text>
+        {!isList && teacher.rating ? <RatingStars rating={teacher.rating} /> : null}
         {teacher.bio ? <Text numberOfLines={2} style={[styles.bio, { color: colors.muted }]}>{teacher.bio}</Text> : null}
       </View>
       {isList ? (
@@ -33,11 +35,10 @@ export default function TeacherCard({ teacher, onPress, variant = 'grid' }) {
 
 const styles = StyleSheet.create({
   card: {
-    width: 140,
+    width: '100%',
     borderRadius: 12,
     borderWidth: 1,
     padding: 14,
-    marginRight: 12,
     alignItems: 'center',
     ...theme.shadow.sm,
   },

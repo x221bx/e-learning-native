@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, FlatList, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { View, FlatList, StyleSheet, TouchableOpacity, Text, Dimensions } from 'react-native';
 import { useColors } from '../theme/hooks';
 import { instructors } from '../mock/data';
 import TeacherCard from '../components/TeacherCard';
@@ -12,13 +12,18 @@ export default function TeachersScreen({ navigation }) {
   const colors = useColors();
   const [q, setQ] = useState('');
   const [view, setView] = useState('grid'); // grid | list
-  const subjects = Array.from(new Set(instructors.flatMap((i) => i.subjects || [])));
+  const subjects = Array.from(new Set(instructors.flatMap((i) => i.specialties || [])));
   const [activeSub, setActiveSub] = useState(null);
+  const { width } = Dimensions.get('window');
+  const numColumns = width > 600 ? 3 : 2;
+  const paddingHorizontal = theme.spacing.base;
+  const gap = theme.spacing.base;
+  const itemWidth = (width - 2 * paddingHorizontal - gap * (numColumns - 1)) / numColumns;
   const list = useMemo(() => {
     const s = (q || '').toLowerCase();
     return instructors.filter((t) => (
       (!s || t.name?.toLowerCase().includes(s) || t.title?.toLowerCase().includes(s) || (t.bio || '').toLowerCase().includes(s))
-    ) && (!activeSub || (t.subjects || []).includes(activeSub)));
+    ) && (!activeSub || (t.specialties || []).includes(activeSub)));
   }, [q, activeSub]);
 
   return (
@@ -51,13 +56,13 @@ export default function TeachersScreen({ navigation }) {
       {view === 'grid' ? (
         <FlatList
           key={view}
-          style={{ padding: theme.spacing.base }}
+          style={{ paddingHorizontal: paddingHorizontal }}
           data={list}
           keyExtractor={(t) => t.id}
-          numColumns={2}
-          columnWrapperStyle={{ gap: theme.spacing.base }}
+          numColumns={numColumns}
+          columnWrapperStyle={{ gap: gap }}
           renderItem={({ item }) => (
-            <View style={{ flex: 1, marginBottom: theme.spacing.base }}>
+            <View style={{ width: itemWidth, marginBottom: gap }}>
               <TeacherCard teacher={item} variant="grid" onPress={() => navigation.navigate('TeacherProfile', { teacherId: item.id })} />
             </View>
           )}
