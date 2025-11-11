@@ -16,7 +16,7 @@
     },
     "android": {},
     "web": {
-      "bundler": "webpack"
+      "bundler": "metro"
     },
     "plugins": [
       "expo-localization",
